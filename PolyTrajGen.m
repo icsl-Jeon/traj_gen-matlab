@@ -11,10 +11,11 @@ classdef PolyTrajGen < TrajGen
         
         % Optimization 
         nVar; % total number of variables         
-        Qset; % set of quadratic objective 
-        AeqSet; beqSet % set of eqaulity constraints 
-        ASet; bSet;  % set of inequality constraints 
-        NconstraintFixedPin; % number of eq constraints per segment. This checks the feasibility of optimization.                  
+        weight_mask; % objective penalization weight
+        fixPinSet; 
+        loosePinSet; 
+        segState; % segState(:,m) = [Nf ; Nc]
+        fixPinState; % fixPinState{m} = [set of orders of imposed pin]
     end
 
     %% 1. Public method
@@ -26,17 +27,15 @@ classdef PolyTrajGen < TrajGen
             obj.dim = dim; obj.M = length(knots)-1; 
             obj.maxContiOrder = maxContiOrder;      
             obj.nVar = (obj.N+1) * (obj.M);
-            % Optimization 
-            obj.AeqSet = cell(dim);
-            obj.beqSet = cell(dim);
-            obj.ASet = cell(dim);
-            obj.bSet = cell(dim);            
-            obj.Qset = cell(dim);
-            obj.isSolved = false; 
             
-            for dd = 1:obj.dim
-                obj.NconstraintFixedPin{dd} = zeros(1,obj.M);            
-            end            
+            % Optimization 
+            obj.isSolved = false;             
+            obj.fixPinSet = cell(obj.M);
+            obj.loosePinSet = cell(obj.M);
+            
+            % State
+            obj.segState = zeros(2,obj.M);
+            obj.fixPinState = cell(obj.M);            
         end
         
         function setDerivativeObj(obj,weight_mask)
@@ -45,21 +44,8 @@ classdef PolyTrajGen < TrajGen
             if length(weight_mask) > obj.N
                 warning('Order of derivative objective > order of poly. Higher terms will be ignored. ');
                 weight_mask = weight_mask(1:obj.N);               
-            end
-            
-            % Build quadratic terms to penalize d th order derivatives weighted by weight_mask            
-            Q = zeros(obj.nVar);
-            for d = 1:length(weight_mask)
-                for m = 1:obj.M
-                    dT = obj.Ts(m+1) - obj.Ts(m);  
-                    Qm{m} = obj.IntDerSquard(d)/dT^(2*d-1);
-                end
-                Qd = blkdiag(Qm{:}); Q = Q + weight_mask(d)*Qd;               
-            end
-            % For all dimensions, we collect Q term.  
-            for dd = 1:obj.dim
-                obj.Qset{dd}  = Q;
             end            
+            obj.weight_mask = weight_mask;
         end
         
         function addPin(obj,pin)            
@@ -69,59 +55,34 @@ classdef PolyTrajGen < TrajGen
             % fix pin, imposing time should be knots of this polynomial.
             % pin = struct('t',,'d',,'X',)
             % X = Xval or X = [Xl Xu] where Xl or Xu is D x 1 vector
-            
-            t = pin.t; d = pin.d; X = pin.X; % the t is global time 
+            t = pin.t; X = pin.X; % the t is global time 
             assert (size(X,1) == obj.dim,'dim of pin val != dim of this TrajGen\n');
-            [m,tau] = obj.findSegInteval(t); 
             addPin@TrajGen(obj,pin); % call the common function of addPin 
-            
-            % Prepare insertion
-            idxStart = (m-1)*(obj.N+1) + 1; idxEnd = m*(obj.N+1);
-            dTm = obj.Ts(m+1) - obj.Ts(m);
-            % Insert the pin constraint 
+            [m,~] = obj.findSegInteval(t);             
             if size(X,2) == 2 % inequality (loose pin)
-                for dd = 1:obj.dim % X,Y,Z or Yaw...
-                    a = zeros(2,obj.nVar); b = zeros(2,1);                    
-                    a(:,idxStart:idxEnd)  = [obj.tVec(tau,d)'/dTm^d; -obj.tVec(tau,d)'/dTm^d;]; b(:) = [X(dd,2)  -X(dd,1)];
-                    obj.ASet{dd} = [obj.ASet{dd} ; a]; obj.bSet{dd} = [obj.bSet{dd} ; b];
-                end            
-            elseif size(X,2) == 1 % equality (fixed pin)
+                obj.loosePinSet{m} = [obj.loosePinSet{m} pin];
+            elseif size(X,2) == 1    % equality (fixed pin)
                 assert (t == obj.Ts(m) || t == obj.Ts(m+1),'Fix pin should be imposed only knots\n');
-                for dd = 1:obj.dim % X,Y,Z or Yaw...
-                    aeq = zeros(1,obj.nVar); 
-                    aeq(:,idxStart:idxEnd)  = obj.tVec(tau,d)'/dTm^d; beq = X(dd);
-                    obj.AeqSet{dd} = [obj.AeqSet{dd} ;aeq]; obj.beqSet{dd} = [obj.beqSet{dd}; beq];
-                    % This segment added equality constraints                     
-                    obj.NconstraintFixedPin{dd}(m) = obj.NconstraintFixedPin{dd}(m) + 1; 
-                    if obj.NconstraintFixedPin{dd}(m) >= obj.N+1
-                        warning('No admissible constraints left on the segment\n');
-                    end
-                end            
+                if obj.segState(1,m) <= obj.N+1 
+                    obj.fixPinSet{m} = [obj.fixPinSet{m} pin];
+                    obj.segState(1,m) = obj.segState(1,m) + 1;
+                    obj.fixPinState{m} = [obj.fixPinState{m} pin.d];                                           
+                else
+                    warning('FixPin exceed the dof of this segment. Pin ignored\n');
+                end
             else
-                disp('Invalid pin. Either X or [Xl Xu] to be expected, where X is col vec.\n');
-                return 
-            end            
-        end             
-
+                warning('Dim of pin value is invalid\;');
+            end                
+        end
+                   
         function solve(obj)           
             obj.isSolved = true;
-            for dd = 1:obj.dim % per element 
-                % First, we complete the continuity constraint 
-                dof = obj.N+1 - obj.NconstraintFixedPin{dd}; % total dof 
-                contiDof = min(dof,obj.maxContiOrder); % dof of segment m to be used for continuity 
-
-                for m = 1:obj.M-1                    
-                    if contiDof(m) ~= obj.maxContiOrder
-                        warnStr = sprintf('Connecting segment (%d,%d) : lacks %d dof  for imposed %d th continuity',...
-                                                m,m+1,obj.maxContiOrder - contiDof(m),obj.maxContiOrder);
-                        warning(warnStr);
-                    end                    
-                    obj.addContinuity(m,contiDof(m))
-                end
-                
+            % Prepare QP 
+            [QSet,ASet,BSet,AeqSet,BeqSet] = obj.getQPSet;
+            for dd = 1:obj.dim % per element                 
                 % Then, solve the optimization 
                 fprintf('solving %d th dimension..\n', dd)
-                [Phat,~,flag] = quadprog(obj.Qset{dd},[],obj.ASet{dd},obj.bSet{dd},obj.AeqSet{dd},obj.beqSet{dd});
+                [Phat,~,flag] = quadprog(QSet{dd},[],ASet{dd},BSet{dd},AeqSet{dd},BeqSet{dd});
                 obj.isSolved = obj.isSolved && (flag == 1); 
                 if (flag == 1)
                     P = obj.scaleMatBigInv*Phat;
@@ -129,8 +90,7 @@ classdef PolyTrajGen < TrajGen
                     fprintf('Success!\n');                    
                 else
                     fprintf('Failure..\n');                    
-                end
-                
+                end                
             end                        
             fprintf('Done!\n');
         end
@@ -227,20 +187,95 @@ classdef PolyTrajGen < TrajGen
             tau = (t - obj.Ts(m)) / (obj.Ts(m+1) - obj.Ts(m));                            
         end       
 
-        function addContinuity(obj,m,dmax)
-            % addContinuity(obj,m,dmax)
-            % add continuity C^(dmax) th continuity to seg m with seg (m+1)
-            idxStart = (m-1)*(obj.N+1) + 1; idxEnd = (m+1)*(obj.N+1);    
+        function [aeqSet,beqSet]=fixPinMatSet(obj,pin)
+            aeqSet = cell(obj.dim,1); beqSet = cell(obj.dim,1);
+             t = pin.t; X = pin.X; d = pin.d;
+            [m,tau] = obj.findSegInteval(t);                    
+            idxStart = (m-1)*(obj.N+1) + 1; idxEnd = m*(obj.N+1);
+            dTm = obj.Ts(m+1) - obj.Ts(m);
             for dd = 1:obj.dim
-                for d = 0:dmax
-                    dTm1 = obj.Ts(m+1) - obj.Ts(m);
-                    dTm2 = obj.Ts(m+2) - obj.Ts(m+1);                    
-                    aeq = zeros(1,obj.nVar);
-                    aeq(idxStart : idxEnd) = [obj.tVec(1,d)'/dTm1^(d) -obj.tVec(0,d)'/dTm2^(d)]; 
-                    obj.AeqSet{dd} = [obj.AeqSet{dd}; aeq]; obj.beqSet{dd} = [obj.beqSet{dd} ; 0];
-                end
+                aeq = zeros(1,obj.nVar); 
+                aeq(:,idxStart:idxEnd)  = obj.tVec(tau,d)'/dTm^d; 
+                aeqSet{dd} = aeq;
+                beq = X(dd);        
+                beqSet{dd} = beq;
+            end                   
+        end
+        
+        function [aSet,bSet] = loosePinMatSet(obj,pin)
+            aSet = cell(obj.dim,1); bSet = cell(obj.dim,1);            
+             t = pin.t; X = pin.X; d=pin.d;
+            [m,tau] = obj.findSegInteval(t);                    
+            idxStart = (m-1)*(obj.N+1) + 1; idxEnd = m*(obj.N+1);
+            dTm = obj.Ts(m+1) - obj.Ts(m);            
+            for dd = 1:obj.dim
+                a = zeros(2,obj.nVar); b = zeros(2,1);                    
+                a(:,idxStart:idxEnd)  = [obj.tVec(tau,d)'/dTm^d; -obj.tVec(tau,d)'/dTm^d;]; b(:) = [X(dd,2)  -X(dd,1)];
+                aSet{dd} = a; bSet{dd} = b;
             end
         end
+        
+        function [aeq, beq] = contiMat(obj,m,dmax)        
+                idxStart = (m-1)*(obj.N+1) + 1; idxEnd = (m+1)*(obj.N+1);                
+                dTm1 = obj.Ts(m+1) - obj.Ts(m);
+                dTm2 = obj.Ts(m+2) - obj.Ts(m+1);                    
+                aeq = zeros(dmax+1,obj.nVar); beq = zeros(dmax+1,1);
+                for d = 0:dmax
+                    aeq(d+1,idxStart : idxEnd) = [obj.tVec(1,d)'/dTm1^(d) -obj.tVec(0,d)'/dTm2^(d)]; 
+                end
+        end
+        
+        function [QSet,ASet,BSet,AeqSet,BeqSet] = getQPSet(obj)
+             QSet = cell(obj.dim,1); ASet = cell(obj.dim,1); BSet = cell(obj.dim,1); AeqSet = cell(obj.dim,1); BeqSet = cell(obj.dim,1);
+
+             % 1. Objective             
+             for dd = 1:obj.dim
+                Q = zeros(obj.nVar);
+                for d = 1:length(obj.weight_mask)
+                    for m = 1:obj.M
+                        dT = obj.Ts(m+1) - obj.Ts(m);  
+                        Qm{m} = obj.IntDerSquard(d)/dT^(2*d-1);
+                    end
+                    Qd = blkdiag(Qm{:}); Q = Q + obj.weight_mask(d)*Qd;               
+                end
+                QSet{dd}  = Q;
+            end
+            
+            % 2. Constraint
+            for m = 1:obj.M
+                % Fix pin 
+                for pin = obj.fixPinSet{m}
+                    [aeqSet,beqSet]=obj.fixPinMatSet(pin);                
+                    for dd = 1:obj.dim
+                        AeqSet{dd} = [AeqSet{dd} ; aeqSet{dd}]; BeqSet{dd} = [BeqSet{dd} ; beqSet{dd}];                    
+                    end
+                end
+                % Continuity
+                if m < obj.M
+                    contiDof = min(obj.maxContiOrder,obj.N+1 - obj.segState(1,m)); obj.segState(2,m) = contiDof;
+                    if contiDof ~= obj.maxContiOrder
+                        warnStr = sprintf('Connecting segment (%d,%d) : lacks %d dof  for imposed %d th continuity',...
+                                                m,m+1,obj.maxContiOrder - contiDof(m),obj.maxContiOrder);
+                        warning(warnStr);                      
+                    end
+                    if contiDof > 0
+                        [aeq,beq]=obj.contiMat(m,contiDof);           
+                        for dd = 1:obj.dim
+                            AeqSet{dd} = [AeqSet{dd} ; aeq]; BeqSet{dd} = [BeqSet{dd} ; beq];                                                        
+                        end
+                    end
+                end
+                
+                % Loose pin 
+                for pin = obj.loosePinSet{m}
+                    [aSet,bSet]=obj.loosePinMatSet(pin);                
+                    for dd = 1:obj.dim
+                        ASet{dd} = [ASet{dd} ; aSet{dd}]; BSet{dd} = [BSet{dd} ; bSet{dd}];                    
+                    end 
+                end
+            end                                            
+        end        
+        
     end
     
     

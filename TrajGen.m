@@ -56,7 +56,7 @@ classdef (Abstract) TrajGen < handle
                 
                 % 2. Draw curve 
                 if obj.isSolved 
-                        Nplot = 200;
+                        Nplot = 100;
                         ts = linspace(obj.Ts(1),obj.Ts(end),Nplot);
                         Xs = obj.eval(ts,0);
                         plot3(Xs(1,:),Xs(2,:),Xs(3,:),'k-')
@@ -108,7 +108,7 @@ classdef (Abstract) TrajGen < handle
                 % 2. Draw curve 
                 if obj.isSolved 
                     for d = 0:plotOrder 
-                        Nplot = 100;
+                        Nplot = 50;
                         ts = linspace(obj.Ts(1),obj.Ts(end),Nplot);
                         Xs = obj.eval(ts,d);
                         for dd = 1:obj.dim
