@@ -1,7 +1,7 @@
 classdef PolyTrajGen < TrajGen 
     properties (SetAccess = private)
         % Basic params 
-        algorithm;  % mellinger or roy       
+        algorithm;  % poly-coeff /end-derivative
         
         % Polynomial 
         polyCoeffSet; % set of P = [p1 p2 ... pM] where pm = (N+1) x 1 vector 
@@ -15,7 +15,7 @@ classdef PolyTrajGen < TrajGen
         fixPinSet; 
         loosePinSet; 
         segState; % segState(:,m) = [Nf ; Nc]
-        fixPinState; % fixPinState{m} = [set of orders of imposed pin]
+        fixPinOrder; % fixPinOrder{m} = [set of orders of imposed pin]
     end
 
     %% 1. Public method
@@ -23,19 +23,29 @@ classdef PolyTrajGen < TrajGen
         function obj = PolyTrajGen(knots,order,algo,dim,maxContiOrder)
             %  PolyTrajGen(knots,order,algo,dim)
             % Intialize the functor to generate trajectory  
-            obj.N = order; obj.Ts = knots; obj.algorithm = algo; 
+            obj.N = order; obj.Ts = knots; 
+            
+            if strcmp(algo,'poly-coeff')
+                fprintf('Optimization will be performed on the coefficients.\n'); obj.algorithm = algo; 
+            elseif strcmp(algo,'end-derivative')
+                fprintf('Optimization will be performed on end derivatives. This will improve optimization performance.\n'); obj.algorithm = algo;    
+            else
+                error('algorithm is invalid. enter either : poly-coeff or end-derivative\n');
+                return;
+            end
+            
             obj.dim = dim; obj.M = length(knots)-1; 
             obj.maxContiOrder = maxContiOrder;      
             obj.nVar = (obj.N+1) * (obj.M);
             
             % Optimization 
             obj.isSolved = false;             
-            obj.fixPinSet = cell(obj.M);
-            obj.loosePinSet = cell(obj.M);
+            obj.fixPinSet = cell(obj.M,1);
+            obj.loosePinSet = cell(obj.M,1);
             
             % State
             obj.segState = zeros(2,obj.M);
-            obj.fixPinState = cell(obj.M);            
+            obj.fixPinOrder = cell(obj.M,1);            
         end
         
         function setDerivativeObj(obj,weight_mask)
@@ -66,7 +76,7 @@ classdef PolyTrajGen < TrajGen
                 if obj.segState(1,m) <= obj.N+1 
                     obj.fixPinSet{m} = [obj.fixPinSet{m} pin];
                     obj.segState(1,m) = obj.segState(1,m) + 1;
-                    obj.fixPinState{m} = [obj.fixPinState{m} pin.d];                                           
+                    obj.fixPinOrder{m} = [obj.fixPinOrder{m} pin.d];                                           
                 else
                     warning('FixPin exceed the dof of this segment. Pin ignored\n');
                 end
@@ -78,20 +88,32 @@ classdef PolyTrajGen < TrajGen
         function solve(obj)           
             obj.isSolved = true;
             % Prepare QP 
-            [QSet,ASet,BSet,AeqSet,BeqSet] = obj.getQPSet;
+            [QSet,ASet,BSet,AeqSet,BeqSet] = obj.getQPSet;            
+            if strcmp(obj.algorithm,'end-derivative')
+                mapMat = obj.coeff2endDerivatives(AeqSet{1}); 
+                [QSet,HSet,ASet,BSet] = obj.mapQP(QSet,ASet,BSet,AeqSet,BeqSet);
+            end
             for dd = 1:obj.dim % per element                 
                 % Then, solve the optimization 
                 fprintf('solving %d th dimension..\n', dd)
-                [Phat,~,flag] = quadprog(QSet{dd},[],ASet{dd},BSet{dd},AeqSet{dd},BeqSet{dd});
+                if strcmp(obj.algorithm,'poly-coeff')
+                    [Phat,~,flag] = quadprog(QSet{dd},[],ASet{dd},BSet{dd},AeqSet{dd},BeqSet{dd});
+                else
+                    tic
+                    [dP,~,flag] = quadprog(QSet{dd},HSet{dd},ASet{dd},BSet{dd}); dF = BeqSet{dd};             
+                    elapse=toc;
+                    if flag == 1
+                        Phat = mapMat\[dF;dP];                
+                    end
+                end
                 obj.isSolved = obj.isSolved && (flag == 1); 
                 if (flag == 1)
-                    P = obj.scaleMatBigInv*Phat;
+                    P = obj.scaleMatBigInv*Phat; 
                     obj.polyCoeffSet{dd} = reshape(P,obj.N+1,[]);
-                    fprintf('Success!\n');                    
                 else
                     fprintf('Failure..\n');                    
                 end                
-            end                        
+            end                 
             fprintf('Done!\n');
         end
         
@@ -227,7 +249,7 @@ classdef PolyTrajGen < TrajGen
         
         function [QSet,ASet,BSet,AeqSet,BeqSet] = getQPSet(obj)
              QSet = cell(obj.dim,1); ASet = cell(obj.dim,1); BSet = cell(obj.dim,1); AeqSet = cell(obj.dim,1); BeqSet = cell(obj.dim,1);
-
+             
              % 1. Objective             
              for dd = 1:obj.dim
                 Q = zeros(obj.nVar);
@@ -252,14 +274,14 @@ classdef PolyTrajGen < TrajGen
                 end
                 % Continuity
                 if m < obj.M
-                    contiDof = min(obj.maxContiOrder,obj.N+1 - obj.segState(1,m)); obj.segState(2,m) = contiDof;
-                    if contiDof ~= obj.maxContiOrder
+                    contiDof = min(obj.maxContiOrder+1,obj.N+1 - obj.segState(1,m)); obj.segState(2,m) = contiDof; % including 0th order 
+                    if contiDof ~= obj.maxContiOrder+1
                         warnStr = sprintf('Connecting segment (%d,%d) : lacks %d dof  for imposed %d th continuity',...
-                                                m,m+1,obj.maxContiOrder - contiDof(m),obj.maxContiOrder);
+                                                m,m+1,obj.maxContiOrder+1 - contiDof,obj.maxContiOrder);
                         warning(warnStr);                      
                     end
                     if contiDof > 0
-                        [aeq,beq]=obj.contiMat(m,contiDof);           
+                        [aeq,beq]=obj.contiMat(m,contiDof-1);           
                         for dd = 1:obj.dim
                             AeqSet{dd} = [AeqSet{dd} ; aeq]; BeqSet{dd} = [BeqSet{dd} ; beq];                                                        
                         end
@@ -276,7 +298,37 @@ classdef PolyTrajGen < TrajGen
             end                                            
         end        
         
+        function mapMat = coeff2endDerivatives(obj,Aeq)
+            % mapMat = coeff2endDerivatives(obj,Aeq)
+            assert (size(Aeq,2) <= obj.nVar, 'Pin + continuity constraints are already full. No dof for optim.\n');
+            mapMat = Aeq;
+            for m = 1:obj.M
+                freePinOrder = setdiff(0:obj.N,obj.fixPinOrder{m}); dof = obj.N+1 - (sum(obj.segState(:,m)));
+                freeOrder = freePinOrder(1:dof);
+                for order = freeOrder
+                    virtualPin.t = obj.Ts(m); virtualPin.X = zeros(obj.dim,1); virtualPin.d = order;
+                    aeqSet = obj.fixPinMatSet(virtualPin); aeq = aeqSet{1};
+                    mapMat = [mapMat ; aeq];
+                end
+            end            
+        end
+                
+        function [QSet,HSet,ASet,BSet]=mapQP(obj,QSet,ASet,BSet,AeqSet,BeqSet)
+            % [QSet,HSet,ASet,BSet]=mapQP(obj,QSet,ASet,BSet,AeqSet,BeqSet)
+            % Map optim problem w.r.t poly coeff to w.r.t end derivative
+            Afp = obj.coeff2endDerivatives(AeqSet{1}); AfpInv = inv(Afp); 
+            Nf = size(AeqSet{1},1); 
+            Qtmp = AfpInv'*QSet{1}*AfpInv;             
+            Qff = Qtmp(1:Nf,1:Nf); Qfp = Qtmp(1:Nf,Nf+1:end); Qpf = Qtmp(Nf+1:end,1:Nf); Qpp = Qtmp(Nf+1:end,Nf+1:end);
+            for dd = 1:obj.dim
+                df = BeqSet{dd}; 
+                QSet{dd} = 2*Qpp; HSet{dd} = df'*(Qfp+Qpf');
+                A = ASet{dd}*AfpInv;
+                ASet{dd} = A(:,Nf+1:end); BSet{dd} = BSet{dd} -  A(:,1:Nf)*df;                     
+            end            
+        end
     end
+    
     
     
     
