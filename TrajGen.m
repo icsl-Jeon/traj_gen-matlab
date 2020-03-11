@@ -3,11 +3,25 @@ classdef (Abstract) TrajGen < handle
             dim; % dimension of curve (1,2,..4?)             
             pinSet; % the set of pin 
             isSolved; % boolean              
-            Ts; % time knots (length = M)                  
+            Ts; % time knots (length = M for polyTrajGen and length = 2 for optimalTrajGen)             
+            
+            weight_mask; % objective penalization weight
+
+            % PolyTrajGen ~= OptimalTrajGen
+            fixPinSet; 
+            loosePinSet;             
+            fixPinOrder; % fixPinOrder{m} = [set of orders of imposed pin]            
+            
         end            
         methods                         
+            function obj = TrajGen(knots,dim)
+                obj.dim = dim;
+                obj.Ts = knots;
+            end
             setDerivativeObj(obj,weight)
             function addPin(obj,pin)
+                assert (size(pin.X,1) == obj.dim,'dim of pin val != dim of this TrajGen\n');                            
+                assert (~(pin.t < obj.Ts(1) || pin.t > obj.Ts(end)) ,'t of this pin is out of range of knots\n');                
                 obj.pinSet = [obj.pinSet pin];
             end
             solve(obj)

@@ -122,9 +122,6 @@ classdef PolyTrajGen < TrajGen
             for dd = 1:obj.dim
                 for idx = 1:length(t)
                     ti = t(idx);
-                    if ti < obj.Ts(1) || ti > obj.Ts(end)
-                        warning('Eval of t: out of bound. Extrapolation\n');
-                    end                                        
                     [m,~]=obj.findSegInteval(ti);                    
                     dTm = obj.Ts(m+1) - obj.Ts(m); 
                     val(dd,idx) = obj.tVec((ti - obj.Ts(m)),d)'*obj.polyCoeffSet{dd}(:,m); 

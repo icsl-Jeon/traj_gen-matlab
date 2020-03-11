@@ -67,11 +67,11 @@ classdef OptimTrajGen < TrajGen
             val = zeros(obj.dim,length(t)); 
             for dd = 1:obj.dim
                 for idx = 1:length(t)
-                    if t(idx) < obj.ts(1) || t(idx)  > obj.ts(end-d)
+                    if ti < obj.ts(1) || ti  > obj.ts(end-d)
                         warning('Eval of t: out of bound. Extrapolation\n');
                     end                                                   
                     Xsd = obj.getDiffMat(d)*obj.Xs(dd,:)';
-                    val(dd,idx) = interp1(obj.ts(1:end-d),Xsd,t(idx),'linear','extrap');                    
+                    val(dd) = interp1(obj.ts(1:end-d),Xsd,t,'linear','extrap');                    
                 end
             end
         end                   
@@ -91,15 +91,12 @@ classdef OptimTrajGen < TrajGen
             if d == 0
                 mat = eye(obj.nVar);
             else
-                mat = eye(obj.nVar);                
-                for j = 1:d 
-                    D = zeros(obj.nVar-(j),obj.nVar-(j-1));
-                    for i = 1:obj.nVar-j                                    
-                        D(i,i:i+1) = [-1 1];
-                    end
-                    D = D / obj.dt;
-                    mat = D*mat;
+                for d= 
+                D = zeros(obj.nVar-1,obj.nVar);
+                for i = 1:obj.nVar-1                                    
+                    D(i,i:i+1) = [-1 1];
                 end
+                mat = (D1/obj.dt)^d;
             end
         end
         
@@ -107,8 +104,8 @@ classdef OptimTrajGen < TrajGen
             ASet = cell(obj.dim,1); BSet = cell(obj.dim,1);
             for pin = obj.loosePinSet{1}
                 for dd = 1:obj.dim
-                    n = min(obj.findStepIndex(pin.t),obj.nVar - pin.d); % we lose the last d time-steps during dth derivatives 
-                    a = zeros(2,obj.nVar - pin.d); a(:,n) =  [1 ; -1]; a = a*obj.getDiffMat(pin.d);
+                    n = min(findStepIndex(pin.t),obj.nVar - pin.d); % we lose the last d time-steps during dth derivatives 
+                    a = zeros(2,obj.nVar - pin.d); a(:,n) =  [1 ; -1]; a = a*(obj.getDiffMat(pin.d))^d;
                     b = [pin.X(dd,2)  -pin.X(dd,1)]; 
                     ASet{dd} = [ASet{dd} ; a];  BSet{dd} = [BSet{dd} ; b];
                 end
@@ -119,8 +116,8 @@ classdef OptimTrajGen < TrajGen
             AeqSet = cell(obj.dim,1); BeqSet = cell(obj.dim,1);
             for pin = obj.fixPinSet{1}
                 for dd = 1:obj.dim
-                    n = min(obj.findStepIndex(pin.t),obj.nVar - pin.d); % we lose the last d time-steps during dth derivatives 
-                    aeq = zeros(1,obj.nVar - pin.d); aeq(:,n) =  1; aeq = aeq*(obj.getDiffMat(pin.d));
+                    n = min(findStepIndex(pin.t),obj.nVar - pin.d); % we lose the last d time-steps during dth derivatives 
+                    aeq = zeros(1,obj.nVar - pin.d); aeq(:,n) =  1; aeq = aeq*(obj.getDiffMat(pin.d))^d;
                     beq = pin.X(dd); 
                     AeqSet{dd} = [AeqSet{dd} ; aeq];  BeqSet{dd} = [BeqSet{dd} ; beq];
                 end
@@ -132,7 +129,7 @@ classdef OptimTrajGen < TrajGen
             for dd = 1:obj.dim
             Q = zeros(obj.nVar);
             for d = 1:length(obj.weight_mask)
-                Qd = obj.getDiffMat(d)'*obj.getDiffMat(d);
+                Qd = obj.getDiffMat(d);
                 Q = Q + obj.weight_mask(d)*Qd;             
             end
             QSet{dd}  = Q;
