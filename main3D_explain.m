@@ -58,21 +58,3 @@ pTraj.showTraj(plotOrder,figh3) % plot element-wise trajectory
 pTraj.showPath(figh4)
 view([-41 33])    
 axis([-1 11 -6 10 0 8])    
-
-
-
-%% Plot 
-figuretitle = '7';
-figh3 = figure(3); clf
-figh4 = figure(4); clf
-titleStr1 = sprintf('poly order : %d / max continuity: %d / ',order,maxConti);
-titleStr2 = [' minimzed derivatives order: ', num2str(find(objWeights > 0))];
-sgtitle(strcat(titleStr1,titleStr2))
-set(figh3,'Position',[193 294 1473 610]);
-plotOrder = 3; % Until 3rd order derivatives 
-pTraj.showTraj(plotOrder,figh3) % plot element-wise trajectory 
-pTraj.showPath(figh4)
-view([-41 33])    
-axis([-1 11 -6 10 0 8])    
-figure(figh3); print(['test_img/traj_' figuretitle],'-dpng','-r200')
-figure(figh4); print(['test_img/path_' figuretitle],'-dpng','-r200')

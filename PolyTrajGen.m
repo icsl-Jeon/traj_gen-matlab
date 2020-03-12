@@ -324,8 +324,10 @@ classdef PolyTrajGen < TrajGen
             for dd = 1:obj.dim
                 df = BeqSet{dd}; 
                 QSet{dd} = 2*Qpp; HSet{dd} = df'*(Qfp+Qpf');
-                A = ASet{dd}*AfpInv;
-                ASet{dd} = A(:,Nf+1:end); BSet{dd} = BSet{dd} -  A(:,1:Nf)*df;                     
+                if ~isempty(ASet{dd})
+                    A = ASet{dd}*AfpInv;
+                    ASet{dd} = A(:,Nf+1:end); BSet{dd} = BSet{dd} -  A(:,1:Nf)*df;          
+                end
             end            
         end
     end
