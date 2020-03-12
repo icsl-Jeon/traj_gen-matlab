@@ -39,7 +39,7 @@ while 1
                         plot(x,y,'k-')
                         drawnow                      
                         
-                        t = input('Enter the knots for this points: ');
+                        t = input('Enter the knot for this loose pin: ');
                         while  ~isnumeric(t)
                             disp('It was not a number.');                        
                             t = input('Enter the knots for this points: ');
@@ -66,7 +66,7 @@ while 1
                     hold on
                     h = plot(point(1,1), point(1,2), 'ko');
                     drawnow
-                    t = input('Enter the knots for this points: ');
+                    t = input('Enter the knot for this fix pin: ');
                     while  ~isnumeric(t)
                         disp('It was not a number.');                        
                         t = input('Enter the knots for this points: ');
