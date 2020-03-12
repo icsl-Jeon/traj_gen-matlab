@@ -58,10 +58,10 @@ classdef (Abstract) TrajGen < handle
                             end
                         else % LoosePin
                             if obj.dim == 2 % 2D
-                                rectangle('Position',[X(1,:) X(2,:)],'FaceColor',[0.5 .5 .5],'EdgeColor','k','LineWidth',1)         
+                                rectangle('Position',[X(1,1) X(2,1) X(1,2)-X(1,1) X(2,2)-X(2,1)],'FaceColor',[0.8 .8 .8],'EdgeColor','k','LineWidth',1)         
                                 xlabel('$x$','Interpreter','latex') ;ylabel('$y$','Interpreter','latex');                                 
                             else % 3D
-                                draw_box(X(:,1),X(:,2),[0.5 .5 .5],0.3)
+                                draw_box(X(:,1),X(:,2),[0.8 .8 .8],0.3)
                                 xlabel('$x$','Interpreter','latex') ;ylabel('$y$','Interpreter','latex'); zlabel('z','Interpreter','latex');                                
                             end
                         end
@@ -73,7 +73,11 @@ classdef (Abstract) TrajGen < handle
                         Nplot = 100;
                         ts = linspace(obj.Ts(1),obj.Ts(end),Nplot);
                         Xs = obj.eval(ts,0);
-                        plot3(Xs(1,:),Xs(2,:),Xs(3,:),'k-')
+                        if obj.dim == 3
+                            plot3(Xs(1,:),Xs(2,:),Xs(3,:),'k-')                           
+                        else
+                            plot(Xs(1,:),Xs(2,:),'k-')                            
+                        end
                         grid on
                 end   
            end

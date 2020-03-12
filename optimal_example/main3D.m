@@ -3,7 +3,7 @@
 dim = 3;
 knots = [0 7]; % knots
 pntDensity = 5; % how many points per time 
-objWeights = [1 1 1];  % 1 2 3 th order derivative
+objWeights = [0 1 1];  % 1 2 3 th order derivative
 oTraj = OptimTrajGen(knots,pntDensity,dim);
 
 % 2. Pin 
@@ -30,7 +30,7 @@ end
 pin = struct('t',ts(1),'d',1,'X',Xdot);
 oTraj.addPin(pin);
 % Order 2 pin 
-pin = struct('t',ts(1),'d',2,'X',Xddot);
+pin = struct('t',ts(end),'d',2,'X',Xddot);
 oTraj.addPin(pin);
 
 % 2.2 LoosePin 
