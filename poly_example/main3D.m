@@ -46,6 +46,8 @@ pTraj.setDerivativeObj(objWeights); % set the objective function for penalizing 
 tic
 pTraj.solve;
 toc
+
+
 %%  4. Plot 
 figh3 = figure(3); clf
 figh4 = figure(4); clf
