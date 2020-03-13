@@ -3,7 +3,7 @@
 *traj_gen* is a continuous trajectory generation package where <u>high order derivatives</u> 
 along the trajectory are minimized while satisfying waypoints (equality) and axis-parallel box constraint (inequality). The objective and constraints are formulated in *quadratic programming* (QP) to be updated in real-time. 
 
-- To parameterize a trajectory, we use two types of curve: 1) **piecewise-polynomials** [1,2] and 2) **an sequence of points** [3]. 
+- To parameterize a trajectory, we use two types of curve: 1) **piecewise-polynomials** [1,2] and 2) **a sequence of points** [3]. 
 The difference is optimization variables.   
    
 - In this package, we use a term **pin** to refer the constraints. *Fix-pin* refers a waypoint constraint, 
