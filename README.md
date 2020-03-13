@@ -1,3 +1,5 @@
+## traj_gen :  a continuous trajectory generation with simple API
+
 *traj_gen* is a continuous trajectory generation package where <u>high order derivatives</u> 
 along the trajectory are minimized while satisfying waypoints (equality) and axis-parallel box constraint (inequality). The objective and constraints are formulated in *quadratic programming* (QP) to be updated in real-time. 
 
