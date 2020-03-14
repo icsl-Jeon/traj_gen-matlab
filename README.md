@@ -35,9 +35,9 @@ Also, we plan to provide ROS support such as the [previous version](https://gith
   
 - **polyTrajGen**
   - *Polynomial order (N)* : the order of all the polynomial segments. Although it can increase the power of representation of a curve, the size of optimization variables increases in proportion to (N x M).   
-  - *Optimization target* (*'end-derivative'* or *'poly-coeff'*) : the target of optimization. 'poly-coeff' method sets the coefficients of polynomials as optimization variables in a similar way with [1]. The 'end-derivative' sets the optimization variables as the free derivative values of each end point on a polynomial segment. The dof of a segment is thus (poly_order - # of fix pins on the segment - maximal continuity). For the details, please refer [2].   
+  - *Optimization target* (*'end-derivative'* or *'poly-coeff'*) : the target of optimization. 'poly-coeff' method sets the coefficients of polynomials as optimization variables in a similar way with [1]. The 'end-derivative' sets the optimization variables as the free derivative values of each end point on a polynomial segment. As this method is equivalent to plugging the equality constraints (fix pin and continuity) to optimization problem, it reduces the optimization dimension at the cost of inversion of a mapping matrix. The dof of a segment is thus (poly_order - # of fix pins on the segment - maximal continuity). For the details, please refer [2].   
     
-  - *maximum continuity* 
+  - *Maximum continuity* : the maximally imposed continuity order between segement. Higher value of this parameter enhance the quality of smoothness. However, too high value of this value restricts the dof for optimization, downgrading the opitimization result.   
 - **optimTrajGen**
 
   ### Reference 
