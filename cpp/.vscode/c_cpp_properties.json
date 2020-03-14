@@ -1,0 +1,43 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/jbs/catkin_ws/devel/include/**",
+                "/opt/ros/kinetic/include/**",
+                "/home/jbs/catkin_ws/src/traj_gen_vis/include/**",
+                "/home/jbs/catkin_ws/src/chomp_predict/include/**",
+                "/home/jbs/catkin_ws/src/ddynamic_reconfigure/include/**",
+                "/home/jbs/catkin_ws/src/detection_aware_planning/include/**",
+                "/home/jbs/catkin_ws/src/eigen_checks/include/**",
+                "/home/jbs/catkin_ws/src/hsv_target_localization/include/**",
+                "/home/jbs/catkin_ws/src/minkindr/minkindr/include/**",
+                "/home/jbs/catkin_ws/src/minkindr_ros/minkindr_conversions/include/**",
+                "/home/jbs/catkin_ws/src/optim_traj_gen/include/**",
+                "/home/jbs/catkin_ws/src/realsense-ros/realsense2_camera/include/**",
+                "/home/jbs/catkin_ws/src/rotors_simulator/rotors_control/include/**",
+                "/home/jbs/catkin_ws/src/rotors_simulator/rotors_gazebo_plugins/include/**",
+                "/home/jbs/catkin_ws/src/rotors_simulator/rotors_hil_interface/include/**",
+                "/home/jbs/catkin_ws/src/rotors_simulator/rotors_joy_interface/include/**",
+                "/home/jbs/catkin_ws/src/rqt_search_position/include/**",
+                "/home/jbs/catkin_ws/src/traj_gen/include/**",
+                "/home/jbs/catkin_ws/src/vijeon/include/**",
+                "/home/jbs/catkin_ws/src/voxblox/voxblox/include/**",
+                "/home/jbs/catkin_ws/src/voxblox/voxblox_ros/include/**",
+                "/home/jbs/catkin_ws/src/voxblox/voxblox_rviz_plugin/include/**",
+                "/usr/include/**",
+                "/usr/include/eigen3",
+                "${workspaceFolder}/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/clang-5.0",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
