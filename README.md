@@ -26,6 +26,18 @@ Also, we plan to provide ROS support such as the [previous version](https://gith
 <img src= "https://github.com/icsl-Jeon/traj_gen2/blob/master/img/quick_start.png">
 </p>
 
+## Detailed description on API
+
+### Parameters (arguments in constructor and setDerivativeObj method)
+- Common 
+  - Knots : time knots. In case of polyTrajGen, it defines the segment intervals in time domain. *The fix-pin can be imposed on these time knots* (no limitation for loose pin). In case of optimTrajGen, the time knot is just the start time and end time as it is not defined on a set of time sgements. 
+  - Penality weights for the integral of derivative squared : As the objective of our optimization is the weighted sum of the integral of derivative squared, we have to define the importance weight for each component. This value ws = [w1 w2 ... wd] can be set as the argument of setDerivativeObj(ws). For example, if you want to implement a minimum snap trajectory generation, then set ws = [0 0 0 1] while ws = [0 0 1] for minimum jerk trajectory generation.
+  
+- *polyTrajGen*
+  - Polynomial order 
+  - optimTarget 
+  - maximum continuity 
+- *optimTrajGen
 
   ### Reference 
 
