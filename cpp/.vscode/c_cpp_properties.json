@@ -23,14 +23,14 @@
                 "/home/jbs/catkin_ws/src/rotors_simulator/rotors_hil_interface/include/**",
                 "/home/jbs/catkin_ws/src/rotors_simulator/rotors_joy_interface/include/**",
                 "/home/jbs/catkin_ws/src/rqt_search_position/include/**",
-                "/home/jbs/catkin_ws/src/traj_gen/include/**",
                 "/home/jbs/catkin_ws/src/vijeon/include/**",
                 "/home/jbs/catkin_ws/src/voxblox/voxblox/include/**",
                 "/home/jbs/catkin_ws/src/voxblox/voxblox_ros/include/**",
                 "/home/jbs/catkin_ws/src/voxblox/voxblox_rviz_plugin/include/**",
                 "/usr/include/**",
                 "/usr/include/eigen3",
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/cpp/**",
+                "${workspaceFolder}/cpp/include/**"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",
