@@ -29,15 +29,16 @@ Also, we plan to provide ROS support such as the [previous version](https://gith
 ## Detailed description on API
 
 ### Parameters (arguments in constructor and setDerivativeObj method)
-- Common 
-  - *Knots* : time knots. In case of polyTrajGen, it defines the segment intervals in time domain. *The fix-pin can be imposed on these time knots* (no limitation for loose pin). In case of optimTrajGen, the time knot is just the start time and end time as it is not defined on a set of time sgements. 
-  - *Penality weights for the integral of derivative squared* : As the objective of our optimization is the weighted sum of the integral of derivative squared, we have to define the importance weight for each component. This value ws = [w1 w2 ... wd] can be set as the argument of setDerivativeObj(ws). For example, if you want to implement a minimum snap trajectory generation, then set ws = [0 0 0 1] while ws = [0 0 1] for minimum jerk trajectory generation.
+- **Common** 
+  - *Knots (t1,...,tM)* : time knots. In case of polyTrajGen, it defines the segment intervals in time domain. *The fix-pin can be imposed on these time knots* (no limitation for loose pin). In case of optimTrajGen, the time knot is just the start time and end time as it is not defined on a set of time sgements. 
+  - *Penality weights for the integral of derivative squared* : as the objective of our optimization is the weighted sum of the integral of derivative squared, we have to define the importance weight for each component. This value ws = [w1 w2 ... wd] can be set as the argument of setDerivativeObj(ws). For example, if you want to implement a minimum snap trajectory generation, then set ws = [0 0 0 1] while ws = [0 0 1] for minimum jerk trajectory generation.
   
-- *polyTrajGen*
-  - Polynomial order 
-  - optimTarget 
-  - maximum continuity 
-- *optimTrajGen
+- **polyTrajGen**
+  - *Polynomial order (N)* : the order of all the polynomial segments. Although it can increase the power of representation of a curve, the size of optimization variables increases in proportion to (N x M).   
+  - *Optimization target* (*'end-derivative'* or *'poly-coeff'*) : the target of optimization. 'poly-coeff' method sets the coefficients of polynomials as optimization variables in a similar way with [1]. The 'end-derivative' sets the optimization variables as the free derivative values of each end point on a polynomial segment. The dof of a segment is thus (poly_order - # of fix pins on the segment - maximal continuity). For the details, please refer [2].   
+    
+  - *maximum continuity* 
+- **optimTrajGen**
 
   ### Reference 
 
