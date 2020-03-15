@@ -6,5 +6,5 @@ CXX_FLAGS = -O3 -DNDEBUG   -std=c++11
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/usr/include/eigen3 -I/home/jbs/catkin_ws/src/traj_gen2/test/build/../../include 
+CXX_INCLUDES = -I/usr/include/eigen3 -I/home/jbs/lib/traj_gen2/cpp/test/build/../../include 
 

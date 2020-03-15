@@ -9,9 +9,17 @@
 ../../include/traj_gen2/TrajGen.hpp
 Eigen/Core
 -
+vector
+-
 
-/home/jbs/catkin_ws/src/traj_gen2/test/test_pin.cpp
+/home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp
 traj_gen2/TrajGen.hpp
+-
+
+/home/jbs/lib/traj_gen2/cpp/test/test_pin.cpp
+traj_gen2/TrajGen.hpp
+-
+iostream
 -
 
 /usr/include/eigen3/Eigen/Core

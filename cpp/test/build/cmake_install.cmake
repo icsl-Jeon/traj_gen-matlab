@@ -1,4 +1,4 @@
-# Install script for directory: /home/jbs/catkin_ws/src/traj_gen2/test
+# Install script for directory: /home/jbs/lib/traj_gen2/cpp/test
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -40,5 +40,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/jbs/catkin_ws/src/traj_gen2/test/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/jbs/lib/traj_gen2/cpp/test/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jbs/catkin_ws/src/traj_gen2/test
+CMAKE_SOURCE_DIR = /home/jbs/lib/traj_gen2/cpp/test
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jbs/catkin_ws/src/traj_gen2/test/build
+CMAKE_BINARY_DIR = /home/jbs/lib/traj_gen2/cpp/test/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jbs/catkin_ws/src/traj_gen2/test/build/CMakeFiles /home/jbs/catkin_ws/src/traj_gen2/test/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jbs/lib/traj_gen2/cpp/test/build/CMakeFiles /home/jbs/lib/traj_gen2/cpp/test/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jbs/catkin_ws/src/traj_gen2/test/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jbs/lib/traj_gen2/cpp/test/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -123,6 +123,33 @@ test_pin/fast:
 	$(MAKE) -f CMakeFiles/test_pin.dir/build.make CMakeFiles/test_pin.dir/build
 .PHONY : test_pin/fast
 
+home/jbs/lib/traj_gen2/cpp/src/TrajGen.o: home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.o
+
+.PHONY : home/jbs/lib/traj_gen2/cpp/src/TrajGen.o
+
+# target to build an object file
+home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.o:
+	$(MAKE) -f CMakeFiles/test_pin.dir/build.make CMakeFiles/test_pin.dir/home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.o
+.PHONY : home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.o
+
+home/jbs/lib/traj_gen2/cpp/src/TrajGen.i: home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.i
+
+.PHONY : home/jbs/lib/traj_gen2/cpp/src/TrajGen.i
+
+# target to preprocess a source file
+home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.i:
+	$(MAKE) -f CMakeFiles/test_pin.dir/build.make CMakeFiles/test_pin.dir/home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.i
+.PHONY : home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.i
+
+home/jbs/lib/traj_gen2/cpp/src/TrajGen.s: home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.s
+
+.PHONY : home/jbs/lib/traj_gen2/cpp/src/TrajGen.s
+
+# target to generate assembly for a file
+home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.s:
+	$(MAKE) -f CMakeFiles/test_pin.dir/build.make CMakeFiles/test_pin.dir/home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.s
+.PHONY : home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp.s
+
 test_pin.o: test_pin.cpp.o
 
 .PHONY : test_pin.o
@@ -159,6 +186,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... test_pin"
+	@echo "... home/jbs/lib/traj_gen2/cpp/src/TrajGen.o"
+	@echo "... home/jbs/lib/traj_gen2/cpp/src/TrajGen.i"
+	@echo "... home/jbs/lib/traj_gen2/cpp/src/TrajGen.s"
 	@echo "... test_pin.o"
 	@echo "... test_pin.i"
 	@echo "... test_pin.s"
