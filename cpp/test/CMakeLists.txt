@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(test_pin)
 add_compile_options(-std=c++11)
-set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Release)
 # append the Find*.cmake files (qpOASES) 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../cmake/")
 
@@ -10,11 +10,11 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 
 include_directories(${CMAKE_BINARY_DIR}/../../include)
 
-find_package(qpOASES REQUIRED)
-include_directories(${qpOASES_INCLUDE_DIR})
+#find_package(qpOASES REQUIRED)
+#include_directories(${qpOASES_INCLUDE_DIR})
 
 set(SRC ${CMAKE_SOURCE_DIR}/../src/TrajGen.cpp)
-
+message(${SRC})
 add_executable(test_pin test_pin.cpp ${SRC})
-target_link_libraries( test_pin ${EIGEN3_LIBS} ${qpOASES_LIBRARIES} )
+target_link_libraries( test_pin ${EIGEN3_LIBS})
 
