@@ -4,86 +4,101 @@
 // TODO : Preventing double imposed pins (t,d same, X different)
 //////////////////////////////////////////////////////////////////////////////////
 
-#include <Eigen/Core>
-#include <Eigen/SparseCore>
 #include <vector>
 #include <set>
 #include <algorithm>
 #include <numeric>
+#include <iostream>
+#include <fstream>
 
+#include <Eigen/Core>
+#include <Eigen/SparseCore>
+
+#include <qpOASES.hpp>
 
 using namespace Eigen;
 using namespace std;
 
-namespace trajgen
-{
+/**
+ * Insert inMat to targetMat.block(startRow,startCol,rowSize,colSize).
+ * @param targetMat
+ * @param inMat
+ * @param startRow
+ * @param startCol
+ * @param rowSize
+ * @param colSize
+ */
+void sparseBlockCopy(SparseMatrix<float,RowMajor> *targetMat, SparseMatrix<float,RowMajor> inMat, long startRow, long startCol) ;
+void sparseBlockCopy(SparseMatrix<float,RowMajor> *targetMat, Matrix<float,-1,-1,RowMajor> inMat, long startRow, long startCol) ;
+
+namespace trajgen {
     typedef unsigned int uint;
-    template <size_t Size> using Vector = Eigen::Matrix<float, Size, 1>;
+    template<size_t Size> using Vector = Eigen::Matrix<float, Size, 1>;
     typedef uint d_order; // derivative order
-    typedef uint p_order; // polynomial order 
+    typedef uint p_order; // polynomial order
     typedef vector<float> time_knots;
-    typedef SparseMatrix<float> spMatrixXf;
+    typedef SparseMatrix<float,RowMajor> spMatrixXf;
     using PolyCoeff = Eigen::Matrix<float, -1, 1>;
 
     /////////////////////////////////////////////////
     // PIN for equality or inequality constriants  //
     /////////////////////////////////////////////////
-    
-    // *NOTE* 
-    // We use vector container for unknown size data stack 
-    // while array type is used for a container whose size can be determined at constructor 
 
+    // *NOTE*
+    // We use vector container for unknown size data stack
+    // while array type is used for a container whose size can be determined at constructor
 
-    enum PIN_TYPE{
+    enum PIN_TYPE {
         FIX_PIN = 0, // equality constraint
         LOOSE_PIN = 1 // inequality constraint
     };
 
-    template <size_t dim>
-    struct Pin{                
-        float t; // imposed time 
+    template<size_t dim>
+    struct Pin {
+        float t; // imposed time
         uint d; // imposed order of derivative          
-        Pin(float t_,d_order d_) : t(t_),d(d_){};      
-        virtual PIN_TYPE getType() const= 0;
-    };
-        
-    template <size_t dim>    
-    struct FixPin : public Pin<dim>{
-        Vector<dim> x; // waypoint 
-        FixPin(float t_,uint d_,Vector<dim> x_):Pin<dim>(t_,d_),x(x_) {};
-        PIN_TYPE getType() const {return PIN_TYPE::FIX_PIN;}
-    }; 
+        Pin(float t_, d_order d_) : t(t_), d(d_) {};
 
-    template <size_t dim>    
-    struct LoosePin : public Pin<dim>{
+        virtual PIN_TYPE getType() const = 0;
+    };
+
+    template<size_t dim>
+    struct FixPin : public Pin<dim> {
+        Vector<dim> x; // waypoint 
+        FixPin(float t_, uint d_, Vector<dim> x_) : Pin<dim>(t_, d_), x(x_) {};
+        PIN_TYPE getType() const { return PIN_TYPE::FIX_PIN; }
+    };
+
+    template<size_t dim>
+    struct LoosePin : public Pin<dim> {
         Vector<dim> xl; // lower bound
         Vector<dim> xu; // upper bound
-        LoosePin(float t_,uint d_,Vector<dim> xl_,Vector<dim> xu_):Pin<dim>(t_,d_),xl(xl_),xu(xu_) {};
-        PIN_TYPE getType() const {return PIN_TYPE::LOOSE_PIN;}
+        LoosePin(float t_, uint d_, Vector<dim> xl_, Vector<dim> xu_) : Pin<dim>(t_, d_), xl(xl_), xu(xu_) {};
+        PIN_TYPE getType() const { return PIN_TYPE::LOOSE_PIN; }
     };
 
     /////////////////////////////////////
     // Quadratic programming structure //
     /////////////////////////////////////
 
-
-    template <size_t dim>
-    struct ConstraintMatPair{
+    template<size_t dim>
+    struct ConstraintMatPair {
         vector<spMatrixXf> ASet;
-        vector<Matrix<float,-1,1>> bSet;
+        vector<MatrixXf> bSet;
+
         ConstraintMatPair() {
-            ASet.resize(dim),bSet.resize(dim);
+            ASet.resize(dim), bSet.resize(dim);
         }
 
-        void initialize(uint Nc, uint nVar){
-            for (spMatrixXf & sp : ASet)
-                sp = spMatrixXf(Nc,nVar);
-            for (Matrix<float,-1,1> & mat : bSet)
-                mat = MatrixXf(Nc,1);
+        void initialize(uint Nc, uint nVar) {
+            for (spMatrixXf &sp : ASet)
+                sp = spMatrixXf(Nc, nVar);
+            for (MatrixXf &mat : bSet)
+                mat = MatrixXf::Zero(Nc, 1);
         }
-        ConstraintMatPair(uint Nc,uint nVar) {
-            ASet.resize(dim),bSet.resize(dim);
-            this->initialize(Nc,nVar);
+        ConstraintMatPair(uint Nc, uint nVar) {
+            ASet.resize(dim), bSet.resize(dim);
+            this->initialize(Nc, nVar);
         }
     };
 
@@ -95,23 +110,21 @@ namespace trajgen
         spMatrixXf b;
         spMatrixXf Aeq;
         spMatrixXf beq;
-        QpBlock(uint nVar,uint neq,uint nineq){
-            Q = spMatrixXf(nVar,nVar);
-            H = spMatrixXf(1,nVar);
-            A = spMatrixXf(nineq,nVar);
-            b = spMatrixXf(nineq,1);
-            Aeq = spMatrixXf(neq,nVar);
-            beq = spMatrixXf(neq,1);
-        }
+        QpBlock(uint nVar, uint neq, uint nineq);
+        QpBlock() {};
+        VectorXf getQpSol(bool & isSolved);
     };
 
-    template <size_t dim>
-    struct QpForm{
-        QpBlock * qpBlock;
-        QpForm(uint nVar,uint neq,uint nineq){
+    template<size_t dim>
+    struct QpForm {
+        QpBlock *qpBlock;
+        QpForm(uint nVar, uint neq, uint nineq) {
             qpBlock = new QpBlock[dim];
-
+            for (uint d = 0; d < dim; d++)
+                qpBlock[d] = QpBlock(nVar, neq, nineq);
         };
+        void write();
+        vector<VectorXf> getQpSolSet(bool & isSolved);
     };
 
     /////////////////////////////
@@ -119,32 +132,35 @@ namespace trajgen
     /////////////////////////////
 
     template<size_t dim>
-    class TrajGen{
-        
-        protected:
-            uint M; // number of segment
-            bool isSolved = false; // solve flag
-            time_knots ts; // knots
+    class TrajGen {
 
-            vector<FixPin<dim>>* fixPinSet;  // equality constraints set of M segment. (In case of optimTrajGen, M = 1)
-            vector<LoosePin<dim>>* loosePinSet; // inequality constraints set of ()
-            set<d_order>* fixPinOrderSet;
-            VectorXf weight_mask; // high order derivative penalty weights 
+    protected:
+        uint M; // number of segment
+        bool isSolved = false; // solve flag
+        time_knots ts; // knots
 
-            // Subroutine functions
-            void findSegInterval(float t,uint& m);
-            void findSegInterval(float t,uint& m,float& tau);
-            virtual ConstraintMatPair<dim> fixPinMatSet(const FixPin<dim> * pPin) = 0;
-            virtual ConstraintMatPair<dim> loosePinMatSet(const LoosePin<dim> * pPin) = 0;
-            virtual QpForm<dim> getQPSet() = 0; // create qp problem with current information
+        vector<FixPin<dim>> *fixPinSet;  // equality constraints set of M segment. (In case of optimTrajGen, M = 1)
+        vector<LoosePin<dim>> *loosePinSet; // inequality constraints set of ()
+        set<d_order> *fixPinOrderSet;
+        VectorXf weight_mask; // high order derivative penalty weights
+
+        // Subroutine functions
+        void findSegInterval(float t, uint &m);
+        void findSegInterval(float t, uint &m, float &tau);
+
+        virtual ConstraintMatPair<dim> fixPinMatSet(const FixPin<dim> *pPin,uint blockSize = 1) = 0;
+        virtual ConstraintMatPair<dim> loosePinMatSet(const LoosePin<dim> *pPin,uint blockSize = 1) = 0;
+        virtual QpForm<dim> getQPSet() = 0; // create qp problem with current information
+        uint getTotalNineq();
+        virtual uint getTotalNeq();
 
     public:
-            TrajGen(time_knots ts_);
-            void addPinSet(const vector<Pin<dim>*>& pinPtrSet);
-            void setDerivativeObj(VectorXf weights);
-            virtual void addPin(const Pin<dim>* pin);
-            //virtual Vector<dim> eval(float t_eval, d_order d) = 0;
-            //virtual bool solve() = 0;
+        TrajGen(time_knots ts_);
+        void addPinSet(const vector<Pin<dim> *> &pinPtrSet);
+        void setDerivativeObj(VectorXf weights);
+        virtual void addPin(const Pin<dim> *pin);
+        virtual Vector<dim> eval(float t_eval, d_order d) = 0;
+        virtual bool solve(bool verbose) = 0;
     };
 
     ///////////////////////////////////////////
@@ -168,7 +184,8 @@ namespace trajgen
     // State of the polynomial segment. 
     struct PolyState{
         uint Nc = 0; // order of continuity             
-        uint Nf = 0; // number of fixed pins  
+        uint Nf = 0; // number of fixed pins
+        uint getN() {return Nc+Nf;};
     };
 
     template<size_t dim>
@@ -191,25 +208,19 @@ namespace trajgen
             spMatrixXf IntDerSquard(d_order d);
             // constraints
             ConstraintMatPair<dim> contiMat(uint m, d_order dmax);
-            ConstraintMatPair<dim> fixPinMatSet(const FixPin<dim> * pPin);
-            ConstraintMatPair<dim> loosePinMatSet(const LoosePin<dim> * pPin);
-
+            ConstraintMatPair<dim> fixPinMatSet(const FixPin<dim> * pPin,uint blockSize = 1);
+            ConstraintMatPair<dim> loosePinMatSet(const LoosePin<dim> * pPin,uint blockSize = 1);
+            uint getTotalNeq();
             // qp
             QpForm<dim> getQPSet();
     public:
             PolyTrajGen(time_knots ts_,PolyParam param_) ;
             void addPin(const Pin<dim>* pin);
-    //            Vector<dim> eval(float t_eval, d_order d);
-    //            bool solve();
-
+            Vector<dim> eval(float t_eval, d_order d);
+            bool solve(bool verbose);
 
 
     };
-
-
-
-
-
 
 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -220,10 +231,38 @@ namespace trajgen
 
 
 
+    /////////////////////////////////////
+    // Quadratic programming structure //
+    /////////////////////////////////////
 
 
+    /**
+     * write current problem
+     */
+    template<size_t dim> void QpForm<dim>::write() {
+        ofstream file ("QP");
+        file << "Q:" << "\n" << MatrixXf(qpBlock[0].Q) << endl;
+        file << "H:" << "\n" << MatrixXf(qpBlock[0].H) << endl;
+        file << "A:" << "\n" << MatrixXf(qpBlock[0].A) << endl;
+        for (uint dd = 0 ; dd < dim ; dd++)
+            file << "b[" << dd << "]:\n" << MatrixXf(qpBlock[dd].b) << endl;
 
+        file << "Aeq:" << "\n" << MatrixXf(qpBlock[0].Aeq) << endl;
+        for (uint dd = 0 ; dd < dim ; dd++)
+            file << "beq[" << dd << "]:\n" << MatrixXf(qpBlock[dd].beq) << endl;
+        file.close();
+    }
 
+    template <size_t dim> vector<VectorXf> QpForm<dim>::getQpSolSet(bool & isSolved) {
+        vector<VectorXf> qpSolSet(dim);
+        isSolved = true;
+        for (uint dd = 0; dd < dim ; dd++) {
+            qpSolSet[dd] = qpBlock[dd].getQpSol(isSolved);
+            if (not isSolved)
+                break;
+        }
+        return qpSolSet;
+    }
 
     /////////////////////////////
     // TrajGen as a base class //
@@ -286,7 +325,21 @@ namespace trajgen
     template<size_t dim> void TrajGen<dim>::setDerivativeObj(VectorXf weights){
         weight_mask = weights;
     }
-
+    /**
+     *     get total number of inequality condition. Per a loosePin, two inequalities
+     */
+    template<size_t dim> uint TrajGen<dim>::getTotalNineq() {
+        uint nineq = 0;
+        for (uint m = 0 ; m < M ; m++)
+            nineq+= 2*loosePinSet[m].size();
+        return nineq;
+    }
+    template<size_t dim> uint TrajGen<dim>::getTotalNeq() {
+        uint neq = 0;
+        for (uint m = 0 ; m < M ; m++)
+            neq+= fixPinSet[m].size();
+        return neq;
+    }
 
 
     ///////////////////////////////////////////
@@ -301,6 +354,11 @@ namespace trajgen
         poly_coeff_set = new PolyCoeff*[dim];
         for (int dd = 0;dd <dim ; dd++)
             poly_coeff_set[dd] = new PolyCoeff[this->M];
+
+
+        // set the default Nc (except the last segment )
+        for (uint m = 0 ; m < (this->M - 1); m++)
+            seg_state_set[m].Nc = param_.max_conti_order+1;
 
     }
 
@@ -321,6 +379,11 @@ namespace trajgen
                 // add pin
                 TrajGen<dim>::addPin(pin);
                 seg_state_set[m].Nf+= 1;
+                if (seg_state_set[m].Nf +seg_state_set[m].Nc > N+1 ) // if this pin addition overflow the total # of dof
+                {
+                    seg_state_set[m].Nc -= 1;
+                    printf ("Fix pin reduced the continuity order (seg : %d, Nf=%d / Nc=%d).\n",seg_state_set[m].Nf,seg_state_set[m].Nc);
+                }
                 this->fixPinOrderSet[m].insert(pin->d);
             }
         else
@@ -405,39 +468,55 @@ namespace trajgen
         }
         return Q;
     }
-
-    template <size_t dim> ConstraintMatPair<dim> PolyTrajGen<dim>::fixPinMatSet(const FixPin<dim> *pPin){
+    /**
+     *
+     * @tparam dim
+     * @param pPin pointer to the first element of the array pin
+     * @param blockSize how many elements to be considered
+     * @return
+     */
+    template <size_t dim> ConstraintMatPair<dim> PolyTrajGen<dim>::fixPinMatSet(const FixPin<dim> *pPin,uint blockSize){
         uint nVar = this->M * (N+1);
-        uint Nc = 1; // only one
+        uint Nc = blockSize; // only one
         ConstraintMatPair<dim> abEq (Nc,nVar);
-        uint m; float tau;
-        this->findSegInterval(pPin->t,m,tau);
-        uint idxStart = m*(N+1);
 
-        for (uint dd = 0; dd < dim ; dd ++){
-            abEq.ASet[dd].block(0,idxStart,1,N+1) = tVec(tau,pPin->d) / (this->ts[m+1] - this->ts[m]);
-            abEq.bSet[dd](0) = pPin->x(dd);
+        for (uint blk = 0; blk < blockSize ; blk++) {
+            uint m; float tau;
+            this->findSegInterval((pPin+blk)->t, m, tau);
+            uint idxStart = m * (N + 1);
+            float dt = this->ts[m + 1] - this->ts[m];
+            d_order d = (pPin+blk)->d;
+            for (uint dd = 0; dd < dim; dd++) {
+                sparseBlockCopy(&(abEq.ASet[dd]),tVec(tau,d).transpose()/pow(dt,d),blk,idxStart);
+                abEq.bSet[dd](blk) = (pPin + blk)->x(dd);
+            }
         }
         return abEq;
     }
 
 
-    template <size_t dim> ConstraintMatPair<dim> PolyTrajGen<dim>::loosePinMatSet(const LoosePin<dim> *pPin){
+    template <size_t dim> ConstraintMatPair<dim> PolyTrajGen<dim>::loosePinMatSet(const LoosePin<dim> *pPin,uint blockSize){
         uint nVar = this->M * (N+1);
-        uint Nc = 2;
+        uint Nc = 2*blockSize;
         ConstraintMatPair<dim> abInEq (Nc,nVar);
-        uint m; float tau;
-        this->findSegInterval(pPin->t,m,tau);
-        uint idxStart = m*(N+1);
-        float dt = this->ts[m+1] - this->ts[m];
-        for (uint dd = 0; dd < dim ; dd ++){
-            abInEq.ASet[dd].block(0,idxStart,1,N+1) = tVec(tau,pPin->d) / pow(dt,pPin->d);
-            abInEq.ASet[dd].block(1,idxStart,1,N+1) = -tVec(tau,pPin->d) / pow(dt,pPin->d);
-            abInEq.bSet[dd](0) = pPin->xu(dd);
-            abInEq.bSet[dd](1) = -pPin->xl(dd);
-        }
+       for (uint blk = 0 ; blk < blockSize ; blk ++) {
+           uint m; float tau;
+           this->findSegInterval((pPin+blk)->t, m, tau);
+           uint idxStart = m * (N + 1);
+           float dt = this->ts[m + 1] - this->ts[m];
+           d_order d = (pPin+blk)->d;
+           for (uint dd = 0; dd < dim; dd++) {
+
+               sparseBlockCopy(&(abInEq.ASet[dd]),tVec(tau,d).transpose()/pow(dt,d),2*blk,idxStart);
+               sparseBlockCopy(&(abInEq.ASet[dd]),-tVec(tau,d).transpose()/pow(dt,d),2*blk+1,idxStart);
+
+               abInEq.bSet[dd](2*blk) = (pPin+blk)->xu(dd);
+               abInEq.bSet[dd](2*blk+1) = -(pPin+blk)->xl(dd);
+           }
+       }
         return abInEq;
     }
+
     /**
      * Equality constraint to connect m segment to m+1 segment (m = 0... M-1)
      * @tparam dim
@@ -446,23 +525,38 @@ namespace trajgen
      * @return
      */
     template <size_t dim> ConstraintMatPair<dim> PolyTrajGen<dim>::contiMat(uint m, trajgen::d_order dmax) {
+
         uint nVar = this->M *(N+1);
+
+        if (m == this->M-1)
+            return ConstraintMatPair<dim>(0,nVar);
+
         uint Nc = dmax + 1;
         ConstraintMatPair<dim> abEq(Nc,nVar);
-
         uint idxStart = m*(N+1);
         float dt1 = this->ts[m+1] - this->ts[m];
         float dt2 = this->ts[m+2] - this->ts[m+1];
 
         for (uint dd = 0; dd < dim ; dd++)
             for (d_order d = 0; d <= dmax; d++) {
-                abEq.ASet[dd].block(d, idxStart, 1, N + 1) = tVec(1, d) / pow(dt1, d);
-                abEq.ASet[dd].block(d, idxStart + (N + 1), 1, N + 1) = -tVec(0, d) / pow(dt2, d);
+                sparseBlockCopy(&(abEq.ASet[dd]),tVec(1, d).transpose() / pow(dt1, d),d,idxStart);
+                sparseBlockCopy(&(abEq.ASet[dd]),-tVec(0, d).transpose() / pow(dt2, d),d,idxStart + (N+1));
+
                 abEq.bSet[dd](d) = 0;
             }
 
         return abEq;
     }
+    /**
+     * Get the total number of equality constraint (sum (Nc+Nf) for m = 0,,,M-1)
+     * @tparam dim
+     * @return
+     */
+    template<size_t dim> uint PolyTrajGen<dim>::getTotalNeq() {
+        auto lambda = [&] (uint s1,PolyState s2){return s1+s2.getN();};
+        return accumulate(seg_state_set,seg_state_set+this->M,0,lambda);
+    };
+
 
     /**
      * construct qp problem
@@ -470,19 +564,97 @@ namespace trajgen
      * @return
      */
     template<size_t dim> QpForm<dim> PolyTrajGen<dim>::getQPSet() {
-        QpForm<dim> qpForm;
-        for (int dd = 0 ; dd < dim ; dd++){
-            // 1. Objective function
-            uint nVar = (this->M)*(N+1); qpForm.qpBlock[dd].Q = spMatrixXf(nVar,nVar);
 
+        uint nVar = (this->M)*(N+1);
+        uint nineq = this->getTotalNineq(); // total line of inequality
+        uint neq = this->getTotalNeq();
+        QpForm<dim> qpForm(nVar,neq,nineq); // initialize all the container
 
-
-
-
-
-
+        // 1. Objective function
+        spMatrixXf Q(nVar,nVar);
+        for (uint d = 1; d <= this->weight_mask.size(); d++) { // dth order derivative
+            spMatrixXf Qd(nVar, nVar);
+            for (uint m = 0; m < this->M; m++) { // per segment, plug in the Q
+                float dt = this->ts[m + 1] - this->ts[m];
+                sparseBlockCopy(&Qd,MatrixXf(IntDerSquard(d)/pow(dt,2*d-1)),m*(N+1),m*(N+1));
+            }
+            Q += this->weight_mask[d - 1] * Qd;
         }
 
+        for (uint dd = 0 ; dd < dim ; dd++)
+            qpForm.qpBlock[dd].Q = Q;
+
+        uint Idx1 = 0,Idx2 = 0;
+        for (uint m = 0 ; m < this->M ; m++){ // per segment
+            // 2. Ineq constraint for this segment
+            uint Nineq = this->loosePinSet[m].size();
+            ConstraintMatPair<dim> Ab = loosePinMatSet((this->loosePinSet[m]).data(),this->loosePinSet[m].size());
+            for (uint dd = 0 ; dd < dim ; dd++) { // per dimension
+                sparseBlockCopy(&(qpForm.qpBlock[dd].A),(Ab.ASet[dd]),Idx1,0);
+                sparseBlockCopy(&(qpForm.qpBlock[dd].b),(Ab.bSet[dd]),Idx1,0);
+            }
+            Idx1+= 2*Nineq;
+
+            // 3. Eq constraint for this segment
+            ConstraintMatPair<dim> AbFix = fixPinMatSet((this->fixPinSet[m]).data(),this->fixPinSet[m].size());
+            ConstraintMatPair<dim> AbConti = contiMat(m,seg_state_set[m].Nc-1);
+            uint Neq = seg_state_set[m].getN(), Nf = seg_state_set[m].Nf, Nc = seg_state_set[m].Nc;
+            for (uint dd = 0 ; dd < dim ; dd++) { // inserting A,b
+
+                sparseBlockCopy(&(qpForm.qpBlock[dd].Aeq),(AbFix.ASet[dd]),Idx2,0) ;
+                sparseBlockCopy(&(qpForm.qpBlock[dd].Aeq),(AbConti.ASet[dd]),Idx2+Nf,0);
+                sparseBlockCopy(&(qpForm.qpBlock[dd].beq),(AbFix.bSet[dd]),Idx2,0) ;
+                sparseBlockCopy(&(qpForm.qpBlock[dd].beq),(AbConti.bSet[dd]),Idx2+Nf,0);
+
+            }
+            Idx2 += Neq;
+        }
+        return qpForm;
+    }
+    /**
+     * Solving routine using qpOASES
+     * @tparam dim
+     * @return
+     */
+    template <size_t dim > bool PolyTrajGen<dim>::solve(bool isPrint){
+        // Prepare QP
+        QpForm<dim> qpForm = getQPSet();
+        qpForm.write();
+
+        // Solve
+        bool isSolved;
+        vector<VectorXf> solSet = qpForm.getQpSolSet(isSolved);
+        ofstream file ("QP",std::ofstream::app);
+        for (uint dd = 0 ; dd < dim ; dd++) {
+            file << "sol[" << dd << "]:\n" << (solSet[dd]) << endl;
+            VectorXf P = scaleMatBigInv() * (solSet[dd]); // polynomial (collection)
+            // reshaping
+            for (uint m = 0; m < this->M ; m++) {
+                poly_coeff_set[dd][m] =  P.segment(m * (N + 1), N + 1);
+                if (isPrint)
+                    cout << "Poly-coeff of dim: " << dd << " / segment: " << m  << endl << poly_coeff_set[dd][m] <<endl;
+            }
+        }
+        this->isSolved = isSolved;
+        return isSolved;
+    }
+    /**
+     * Evalute the value of the dth dertivative trajectory at time t.
+     * @tparam dim
+     * @param t_eval evaluation time
+     * @param d order of derivative
+     * @return
+     */
+    template <size_t dim> Vector<dim> PolyTrajGen<dim>::eval(float t_eval, d_order d) {
+        if (t_eval < this->ts[0] or t_eval > this->ts[this->M] )
+            cout << "Trajectory evaluation time out of bound. Extrapolating.. " << endl;
+        uint m ;
+        this->findSegInterval(t_eval,m);
+        float dtm = this->ts[m+1] - this->ts[m];
+        Vector<dim> val;
+        for (uint dd = 0 ; dd < dim ; dd++)
+            val(dd) = tVec(t_eval-this->ts[m],d).transpose()*poly_coeff_set[dd][m];
+        return val;
     }
 
 

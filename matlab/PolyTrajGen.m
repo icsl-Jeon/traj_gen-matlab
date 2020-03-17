@@ -273,7 +273,7 @@ classdef PolyTrajGen < TrajGen
                         AeqSet{dd} = [AeqSet{dd} ; aeqSet{dd}]; BeqSet{dd} = [BeqSet{dd} ; beqSet{dd}];                    
                     end
                 end
-                % Continuity
+                % Continuity 
                 if m < obj.M
                     contiDof = min(obj.maxContiOrder+1,obj.N+1 - obj.segState(1,m)); obj.segState(2,m) = contiDof; % including 0th order 
                     if contiDof ~= obj.maxContiOrder+1
