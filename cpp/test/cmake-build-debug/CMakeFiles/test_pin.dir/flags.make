@@ -6,5 +6,5 @@ CXX_FLAGS = -g   -std=c++11
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/jbs/catkin_ws/src/traj_gen2/cpp/test/cmake-build-debug/../../include -isystem /usr/include/eigen3 
+CXX_INCLUDES = -I/home/jbs/lib/traj_gen2/cpp/test/cmake-build-debug/../../include -isystem /usr/include/eigen3 
 

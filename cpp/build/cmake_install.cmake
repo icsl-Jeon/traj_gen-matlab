@@ -1,4 +1,4 @@
-# Install script for directory: /home/jbs/catkin_ws/src/traj_gen2/cpp
+# Install script for directory: /home/jbs/lib/traj_gen2/cpp
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -32,12 +32,7 @@ if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
   set(CMAKE_INSTALL_SO_NO_EXE "1")
 endif()
 
-# Is this installation the result of a crosscompile?
-if(NOT DEFINED CMAKE_CROSSCOMPILING)
-  set(CMAKE_CROSSCOMPILING "FALSE")
-endif()
-
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
   foreach(file
       "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libtraj_gen.so.2.0.0"
       "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libtraj_gen.so.1"
@@ -51,9 +46,9 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
     endif()
   endforeach()
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES
-    "/home/jbs/catkin_ws/src/traj_gen2/cpp/build/libtraj_gen.so.2.0.0"
-    "/home/jbs/catkin_ws/src/traj_gen2/cpp/build/libtraj_gen.so.1"
-    "/home/jbs/catkin_ws/src/traj_gen2/cpp/build/libtraj_gen.so"
+    "/home/jbs/lib/traj_gen2/cpp/build/libtraj_gen.so.2.0.0"
+    "/home/jbs/lib/traj_gen2/cpp/build/libtraj_gen.so.1"
+    "/home/jbs/lib/traj_gen2/cpp/build/libtraj_gen.so"
     )
   foreach(file
       "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libtraj_gen.so.2.0.0"
@@ -69,19 +64,19 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   endforeach()
 endif()
 
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/traj_gen" TYPE FILE FILES "/home/jbs/catkin_ws/src/traj_gen2/cpp/include/traj_gen2/TrajGen.hpp")
+if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/traj_gen" TYPE FILE FILES "/home/jbs/lib/traj_gen2/cpp/include/traj_gen2/TrajGen.hpp")
 endif()
 
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/pkgconfig" TYPE FILE FILES "/home/jbs/catkin_ws/src/traj_gen2/cpp/build/trajgen.pc")
+if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/pkgconfig" TYPE FILE FILES "/home/jbs/lib/traj_gen2/cpp/build/trajgen.pc")
 endif()
 
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/TrajGen/cmake/TrajGenConfig.cmake")
     file(DIFFERENT EXPORT_FILE_CHANGED FILES
          "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/TrajGen/cmake/TrajGenConfig.cmake"
-         "/home/jbs/catkin_ws/src/traj_gen2/cpp/build/CMakeFiles/Export/share/TrajGen/cmake/TrajGenConfig.cmake")
+         "/home/jbs/lib/traj_gen2/cpp/build/CMakeFiles/Export/share/TrajGen/cmake/TrajGenConfig.cmake")
     if(EXPORT_FILE_CHANGED)
       file(GLOB OLD_CONFIG_FILES "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/TrajGen/cmake/TrajGenConfig-*.cmake")
       if(OLD_CONFIG_FILES)
@@ -90,9 +85,9 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
       endif()
     endif()
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/TrajGen/cmake" TYPE FILE FILES "/home/jbs/catkin_ws/src/traj_gen2/cpp/build/CMakeFiles/Export/share/TrajGen/cmake/TrajGenConfig.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/TrajGen/cmake" TYPE FILE FILES "/home/jbs/lib/traj_gen2/cpp/build/CMakeFiles/Export/share/TrajGen/cmake/TrajGenConfig.cmake")
   if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^()$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/TrajGen/cmake" TYPE FILE FILES "/home/jbs/catkin_ws/src/traj_gen2/cpp/build/CMakeFiles/Export/share/TrajGen/cmake/TrajGenConfig-noconfig.cmake")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/TrajGen/cmake" TYPE FILE FILES "/home/jbs/lib/traj_gen2/cpp/build/CMakeFiles/Export/share/TrajGen/cmake/TrajGenConfig-noconfig.cmake")
   endif()
 endif()
 
@@ -104,5 +99,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/jbs/catkin_ws/src/traj_gen2/cpp/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/jbs/lib/traj_gen2/cpp/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

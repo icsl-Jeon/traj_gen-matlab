@@ -15,6 +15,6 @@ include_directories(${qpOASES_INCLUDE_DIR})
 
 find_package(TrajGen REQUIRED)
 add_executable(test_pin test.cpp)
-target_link_libraries( test_pin ${EIGEN3_LIBS} ${qpOASES_LIBRARIES} traj_gen)
+target_link_libraries( test_pin ${EIGEN3_LIBS}   ${qpOASES_LIBRARIES} traj_gen )
 
 
