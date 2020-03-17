@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <numeric>
 
+
 using namespace Eigen;
 using namespace std;
 
@@ -86,7 +87,32 @@ namespace trajgen
         }
     };
 
+    // p'Q p + H p : interact with qpOASES
+    struct QpBlock {
+        spMatrixXf Q;
+        spMatrixXf H;
+        spMatrixXf A;
+        spMatrixXf b;
+        spMatrixXf Aeq;
+        spMatrixXf beq;
+        QpBlock(uint nVar,uint neq,uint nineq){
+            Q = spMatrixXf(nVar,nVar);
+            H = spMatrixXf(1,nVar);
+            A = spMatrixXf(nineq,nVar);
+            b = spMatrixXf(nineq,1);
+            Aeq = spMatrixXf(neq,nVar);
+            beq = spMatrixXf(neq,1);
+        }
+    };
 
+    template <size_t dim>
+    struct QpForm{
+        QpBlock * qpBlock;
+        QpForm(uint nVar,uint neq,uint nineq){
+            qpBlock = new QpBlock[dim];
+
+        };
+    };
 
     /////////////////////////////
     // TrajGen as a base class //
@@ -110,9 +136,7 @@ namespace trajgen
             void findSegInterval(float t,uint& m,float& tau);
             virtual ConstraintMatPair<dim> fixPinMatSet(const FixPin<dim> * pPin) = 0;
             virtual ConstraintMatPair<dim> loosePinMatSet(const LoosePin<dim> * pPin) = 0;
-
-
-
+            virtual QpForm<dim> getQPSet() = 0; // create qp problem with current information
 
     public:
             TrajGen(time_knots ts_);
@@ -170,6 +194,8 @@ namespace trajgen
             ConstraintMatPair<dim> fixPinMatSet(const FixPin<dim> * pPin);
             ConstraintMatPair<dim> loosePinMatSet(const LoosePin<dim> * pPin);
 
+            // qp
+            QpForm<dim> getQPSet();
     public:
             PolyTrajGen(time_knots ts_,PolyParam param_) ;
             void addPin(const Pin<dim>* pin);
@@ -437,6 +463,29 @@ namespace trajgen
 
         return abEq;
     }
+
+    /**
+     * construct qp problem
+     * @tparam dim
+     * @return
+     */
+    template<size_t dim> QpForm<dim> PolyTrajGen<dim>::getQPSet() {
+        QpForm<dim> qpForm;
+        for (int dd = 0 ; dd < dim ; dd++){
+            // 1. Objective function
+            uint nVar = (this->M)*(N+1); qpForm.qpBlock[dd].Q = spMatrixXf(nVar,nVar);
+
+
+
+
+
+
+
+        }
+
+    }
+
+
 
 } // namespace trajgen
 # endif
