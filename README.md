@@ -5,6 +5,7 @@
 </p>
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/icsl-Jeon/traj_gen-matlab?style=plastic)
+[![View traj_gen-matlab on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://kr.mathworks.com/matlabcentral/fileexchange/74573-traj_gen-matlab)
 
 *traj_gen* is a continuous trajectory generation package where <u>high order derivatives</u> 
 along the trajectory are minimized while satisfying waypoints (equality) and axis-parallel box constraint (inequality). The objective and constraints are formulated in *quadratic programming* (QP) to cater the real-time performance. C++ implementation can be found [here](https://github.com/icsl-Jeon/traj_gen). 
