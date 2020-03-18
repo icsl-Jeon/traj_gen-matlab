@@ -3,14 +3,12 @@ addpath([pwd '/sub_utils']) % for drawing cube
 
 % 1. Prameter setting
 dim = 2; % dimension
-order = 6; % polynomial order 
+order = 4; % polynomial order 
 optimTarget = 'poly-coeff'; % 'poly-coeff' or 'end-derivative'
-maxConti = 4; % maximally imposed continuity between segment 
+maxConti = 2; % maximally imposed continuity between segment 
 
 % 2. Pin creation in figure (FixPin or LoosePin)
-taskBound = [0 10 0 10];
-set(gcf,'Position',[-1879 228 1496 386],'Color',[1 1 1]);
-set(gca,'Position',[0.1300 0.1100 0.7750 0.8150])
+taskBound = [0 40 0 10];
 [fixPin,loosePin] = createPinSet(taskBound);
 
 ts = zeros(1,length(fixPin));
@@ -34,33 +32,14 @@ delete(h_text);
 titleStr1 = sprintf('poly order : %d / max continuity: %d / ',order,maxConti);
 titleStr2 = [' minimzed derivatives order: ', num2str(find(objWeights > 0))];
 sgtitle(strcat(titleStr1,titleStr2))
-set(gcf,'Position',[-1879 228 1496 386],'Color',[1 1 1]);
+% set(figh,'Position',[2194 186 572 386],'Color',[1 1 1]);
 % pTraj.showTraj(4)
 pTraj.showPath(figh)
-axis([0 10 0 10])
+axis([0 40 0 10])
 hold on
 grid off
+
 
 %% 
-pTraj_total = [pTraj_total  pTraj];
-
-%%  Plot 
-for n = [1 2 4 5 6]
-figh = gcf;
-child = get(gca,'Children');
-h_text = findobj(gca,'Type','Text'); % delete every text
-delete(h_text);
-titleStr1 = sprintf('poly order : %d / max continuity: %d / ',order,maxConti);
-titleStr2 = [' minimzed derivatives order: ', num2str(find(objWeights > 0))];
-sgtitle(strcat(titleStr1,titleStr2))
-set(gcf,'Position',[-1879 228 1496 386],'Color',[1 1 1]);
-% pTraj.showTraj(4)
-pTraj_total(n).showPath(figh)
-axis([0 10 0 10])
-hold on
-end
-grid off
-
-
 
     

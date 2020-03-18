@@ -45,7 +45,7 @@ grid off
 pTraj_total = [pTraj_total  pTraj];
 
 %%  Plot 
-for n = [1 2 4 5 6]
+for n = [
 figh = gcf;
 child = get(gca,'Children');
 h_text = findobj(gca,'Type','Text'); % delete every text
