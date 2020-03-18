@@ -25,10 +25,10 @@ a vector in case of fix-pin while two vectors [xl xu] for the loose-pin.
 <img src= "https://github.com/icsl-Jeon/traj_gen2/blob/master/img/quick_start.png">
 </p>
 
-Also, check multiple examples in poly_example and optimal_example. The below is a example **main2D.m** where we interactively select pin information 
+Also, check multiple examples in poly_example and optimal_example. The below is a example **main2D.m** where we interactively select pin information. 
 
 <p align = "center">
-<img src= "https://github.com/icsl-Jeon/traj_gen2/blob/master/img/'2D tutorial.gif'">
+<img src= "https://github.com/icsl-Jeon/traj_gen2/blob/master/img/2d_tutorial.gif">
 </p>
 
 
