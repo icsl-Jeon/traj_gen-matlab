@@ -1,4 +1,4 @@
-## traj_gen :  a continuous trajectory generation with simple API
+## traj_gen :  a continuous trajectory generation with simple API (MATLAB)
 
 <p align = "center">
 <img src= "https://github.com/icsl-Jeon/traj_gen2/blob/master/img/tutorial.gif">
@@ -17,14 +17,22 @@ The difference is optimization variables.
 and *loose-pin* denotes a axis-parallel box constraint. The pin is a triplets (time (t), order of derivatives (d), value (x)) where x is 
 a vector in case of fix-pin while two vectors [xl xu] for the loose-pin.  
 
- - We implemented traj_gen in Matlab and C++(upcoming ~ the end of Mar). In case of 2D trajectory generation in Matlab, we provide interactive pin selection (see poly_example/main2D).
-Also, we plan to provide ROS support such as the [previous version](https://github.com/icsl-Jeon/traj_gen)
+ - We implemented traj_gen in Matlab and plan also [C++(upcoming ~ the end of Mar)](https://github.com/icsl-Jeon/traj_gen). In case of 2D trajectory generation in Matlab, we provide interactive pin selection (see poly_example/main2D).
 
 
-### Matlab API quick start (check multiple examples in poly_example and optimal_example)
+### Matlab API quick start (poly_exmaple/main3D.m)
 <p align = "center">
 <img src= "https://github.com/icsl-Jeon/traj_gen2/blob/master/img/quick_start.png">
 </p>
+
+Also, check multiple examples in poly_example and optimal_example. The below is a example **main2D.m** where we interactively select pin information 
+
+<p align = "center">
+<img src= "https://github.com/icsl-Jeon/traj_gen2/blob/master/img/'2D tutorial.gif'">
+</p>
+
+
+
 
 ## Detailed description on API
 
@@ -42,9 +50,11 @@ Also, we plan to provide ROS support such as the [previous version](https://gith
   
   
 - **optimTrajGen**
+   - *Point density* : the number of posed points per time [s]. For long-ranged trajectory, thus, the total number of variables will increase leading to the burden of the optimization. 
+
+
 
   ### Reference 
-
 
 [1] Mellinger, Daniel, and Vijay Kumar. "Minimum snap trajectory generation and control for quadrotors." *2011 IEEE International Conference on Robotics and Automation*. IEEE, 2011.
 
