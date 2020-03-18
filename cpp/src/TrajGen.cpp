@@ -70,6 +70,9 @@ namespace trajgen{
         qpOASES::real_t xOpt[nVar];
         qp_obj.getPrimalSolution(xOpt);
         isSolved = qp_obj.isSolved();
+        if (isSolved)
+            cout<<"[QP solver] success.  "<<endl;
+
         return Map<Matrix<double, -1, 1>>(xOpt, nVar, 1).cast<float>();
     }
 

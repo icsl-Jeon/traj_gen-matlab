@@ -1,4 +1,4 @@
-#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
 
 #IncludeRegexScan: ^.*$
 
@@ -26,13 +26,15 @@ Eigen/SparseCore
 qpOASES.hpp
 -
 
-/home/jbs/lib/traj_gen2/cpp/src/TrajGen.cpp
+/home/jbs/catkin_ws/src/traj_gen2/cpp/src/TrajGen.cpp
 traj_gen2/TrajGen.hpp
 -
 
 /usr/include/eigen3/Eigen/Core
 src/Core/util/DisableStupidWarnings.h
 /usr/include/eigen3/Eigen/src/Core/util/DisableStupidWarnings.h
+math_functions.hpp
+-
 new
 -
 src/Core/util/Macros.h
@@ -44,6 +46,8 @@ src/Core/util/MKL_support.h
 malloc.h
 -
 immintrin.h
+-
+mmintrin.h
 -
 emmintrin.h
 -
@@ -65,7 +69,13 @@ altivec.h
 -
 arm_neon.h
 -
+vecintrin.h
+-
 vector_types.h
+-
+host_defines.h
+-
+cuda_fp16.h
 -
 omp.h
 -
@@ -93,6 +103,8 @@ climits
 -
 algorithm
 -
+type_traits
+-
 iostream
 -
 intrin.h
@@ -113,10 +125,20 @@ src/Core/NumTraits.h
 /usr/include/eigen3/Eigen/src/Core/NumTraits.h
 src/Core/MathFunctions.h
 /usr/include/eigen3/Eigen/src/Core/MathFunctions.h
-src/Core/SpecialFunctions.h
-/usr/include/eigen3/Eigen/src/Core/SpecialFunctions.h
 src/Core/GenericPacketMath.h
 /usr/include/eigen3/Eigen/src/Core/GenericPacketMath.h
+src/Core/MathFunctionsImpl.h
+/usr/include/eigen3/Eigen/src/Core/MathFunctionsImpl.h
+src/Core/arch/Default/ConjHelper.h
+/usr/include/eigen3/Eigen/src/Core/arch/Default/ConjHelper.h
+src/Core/arch/SSE/PacketMath.h
+/usr/include/eigen3/Eigen/src/Core/arch/SSE/PacketMath.h
+src/Core/arch/AVX/PacketMath.h
+/usr/include/eigen3/Eigen/src/Core/arch/AVX/PacketMath.h
+src/Core/arch/AVX512/PacketMath.h
+/usr/include/eigen3/Eigen/src/Core/arch/AVX512/PacketMath.h
+src/Core/arch/AVX512/MathFunctions.h
+/usr/include/eigen3/Eigen/src/Core/arch/AVX512/MathFunctions.h
 src/Core/arch/SSE/PacketMath.h
 /usr/include/eigen3/Eigen/src/Core/arch/SSE/PacketMath.h
 src/Core/arch/SSE/Complex.h
@@ -151,12 +173,26 @@ src/Core/arch/NEON/MathFunctions.h
 /usr/include/eigen3/Eigen/src/Core/arch/NEON/MathFunctions.h
 src/Core/arch/NEON/Complex.h
 /usr/include/eigen3/Eigen/src/Core/arch/NEON/Complex.h
+src/Core/arch/ZVector/PacketMath.h
+/usr/include/eigen3/Eigen/src/Core/arch/ZVector/PacketMath.h
+src/Core/arch/ZVector/MathFunctions.h
+/usr/include/eigen3/Eigen/src/Core/arch/ZVector/MathFunctions.h
+src/Core/arch/ZVector/Complex.h
+/usr/include/eigen3/Eigen/src/Core/arch/ZVector/Complex.h
+src/Core/arch/CUDA/Half.h
+/usr/include/eigen3/Eigen/src/Core/arch/CUDA/Half.h
+src/Core/arch/CUDA/PacketMathHalf.h
+/usr/include/eigen3/Eigen/src/Core/arch/CUDA/PacketMathHalf.h
+src/Core/arch/CUDA/TypeCasting.h
+/usr/include/eigen3/Eigen/src/Core/arch/CUDA/TypeCasting.h
 src/Core/arch/CUDA/PacketMath.h
 /usr/include/eigen3/Eigen/src/Core/arch/CUDA/PacketMath.h
 src/Core/arch/CUDA/MathFunctions.h
 /usr/include/eigen3/Eigen/src/Core/arch/CUDA/MathFunctions.h
 src/Core/arch/Default/Settings.h
 /usr/include/eigen3/Eigen/src/Core/arch/Default/Settings.h
+src/Core/functors/TernaryFunctors.h
+/usr/include/eigen3/Eigen/src/Core/functors/TernaryFunctors.h
 src/Core/functors/BinaryFunctors.h
 /usr/include/eigen3/Eigen/src/Core/functors/BinaryFunctors.h
 src/Core/functors/UnaryFunctors.h
@@ -167,6 +203,10 @@ src/Core/functors/StlFunctors.h
 /usr/include/eigen3/Eigen/src/Core/functors/StlFunctors.h
 src/Core/functors/AssignmentFunctors.h
 /usr/include/eigen3/Eigen/src/Core/functors/AssignmentFunctors.h
+src/Core/arch/CUDA/Complex.h
+/usr/include/eigen3/Eigen/src/Core/arch/CUDA/Complex.h
+src/Core/IO.h
+/usr/include/eigen3/Eigen/src/Core/IO.h
 src/Core/DenseCoeffsBase.h
 /usr/include/eigen3/Eigen/src/Core/DenseCoeffsBase.h
 src/Core/DenseBase.h
@@ -201,6 +241,8 @@ src/Core/Matrix.h
 /usr/include/eigen3/Eigen/src/Core/Matrix.h
 src/Core/Array.h
 /usr/include/eigen3/Eigen/src/Core/Array.h
+src/Core/CwiseTernaryOp.h
+/usr/include/eigen3/Eigen/src/Core/CwiseTernaryOp.h
 src/Core/CwiseBinaryOp.h
 /usr/include/eigen3/Eigen/src/Core/CwiseBinaryOp.h
 src/Core/CwiseUnaryOp.h
@@ -241,8 +283,6 @@ src/Core/Visitor.h
 /usr/include/eigen3/Eigen/src/Core/Visitor.h
 src/Core/Fuzzy.h
 /usr/include/eigen3/Eigen/src/Core/Fuzzy.h
-src/Core/IO.h
-/usr/include/eigen3/Eigen/src/Core/IO.h
 src/Core/Swap.h
 /usr/include/eigen3/Eigen/src/Core/Swap.h
 src/Core/CommaInitializer.h
@@ -297,6 +337,8 @@ src/Core/BandMatrix.h
 /usr/include/eigen3/Eigen/src/Core/BandMatrix.h
 src/Core/CoreIterators.h
 /usr/include/eigen3/Eigen/src/Core/CoreIterators.h
+src/Core/ConditionEstimator.h
+/usr/include/eigen3/Eigen/src/Core/ConditionEstimator.h
 src/Core/BooleanRedux.h
 /usr/include/eigen3/Eigen/src/Core/BooleanRedux.h
 src/Core/Select.h
@@ -311,22 +353,22 @@ src/Core/Reverse.h
 /usr/include/eigen3/Eigen/src/Core/Reverse.h
 src/Core/ArrayWrapper.h
 /usr/include/eigen3/Eigen/src/Core/ArrayWrapper.h
-src/Core/products/GeneralMatrixMatrix_MKL.h
-/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixMatrix_MKL.h
-src/Core/products/GeneralMatrixVector_MKL.h
-/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixVector_MKL.h
-src/Core/products/GeneralMatrixMatrixTriangular_MKL.h
-/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixMatrixTriangular_MKL.h
-src/Core/products/SelfadjointMatrixMatrix_MKL.h
-/usr/include/eigen3/Eigen/src/Core/products/SelfadjointMatrixMatrix_MKL.h
-src/Core/products/SelfadjointMatrixVector_MKL.h
-/usr/include/eigen3/Eigen/src/Core/products/SelfadjointMatrixVector_MKL.h
-src/Core/products/TriangularMatrixMatrix_MKL.h
-/usr/include/eigen3/Eigen/src/Core/products/TriangularMatrixMatrix_MKL.h
-src/Core/products/TriangularMatrixVector_MKL.h
-/usr/include/eigen3/Eigen/src/Core/products/TriangularMatrixVector_MKL.h
-src/Core/products/TriangularSolverMatrix_MKL.h
-/usr/include/eigen3/Eigen/src/Core/products/TriangularSolverMatrix_MKL.h
+src/Core/products/GeneralMatrixMatrix_BLAS.h
+/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixMatrix_BLAS.h
+src/Core/products/GeneralMatrixVector_BLAS.h
+/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixVector_BLAS.h
+src/Core/products/GeneralMatrixMatrixTriangular_BLAS.h
+/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixMatrixTriangular_BLAS.h
+src/Core/products/SelfadjointMatrixMatrix_BLAS.h
+/usr/include/eigen3/Eigen/src/Core/products/SelfadjointMatrixMatrix_BLAS.h
+src/Core/products/SelfadjointMatrixVector_BLAS.h
+/usr/include/eigen3/Eigen/src/Core/products/SelfadjointMatrixVector_BLAS.h
+src/Core/products/TriangularMatrixMatrix_BLAS.h
+/usr/include/eigen3/Eigen/src/Core/products/TriangularMatrixMatrix_BLAS.h
+src/Core/products/TriangularMatrixVector_BLAS.h
+/usr/include/eigen3/Eigen/src/Core/products/TriangularMatrixVector_BLAS.h
+src/Core/products/TriangularSolverMatrix_BLAS.h
+/usr/include/eigen3/Eigen/src/Core/products/TriangularSolverMatrix_BLAS.h
 src/Core/Assign_MKL.h
 /usr/include/eigen3/Eigen/src/Core/Assign_MKL.h
 src/Core/GlobalFunctions.h
@@ -442,6 +484,8 @@ src/Core/util/ReenableStupidWarnings.h
 
 /usr/include/eigen3/Eigen/src/Core/CommaInitializer.h
 
+/usr/include/eigen3/Eigen/src/Core/ConditionEstimator.h
+
 /usr/include/eigen3/Eigen/src/Core/CoreEvaluators.h
 
 /usr/include/eigen3/Eigen/src/Core/CoreIterators.h
@@ -449,6 +493,8 @@ src/Core/util/ReenableStupidWarnings.h
 /usr/include/eigen3/Eigen/src/Core/CwiseBinaryOp.h
 
 /usr/include/eigen3/Eigen/src/Core/CwiseNullaryOp.h
+
+/usr/include/eigen3/Eigen/src/Core/CwiseTernaryOp.h
 
 /usr/include/eigen3/Eigen/src/Core/CwiseUnaryOp.h
 
@@ -489,6 +535,8 @@ src/Core/util/ReenableStupidWarnings.h
 /usr/include/eigen3/Eigen/src/Core/MapBase.h
 
 /usr/include/eigen3/Eigen/src/Core/MathFunctions.h
+
+/usr/include/eigen3/Eigen/src/Core/MathFunctionsImpl.h
 
 /usr/include/eigen3/Eigen/src/Core/Matrix.h
 
@@ -540,8 +588,6 @@ src/Core/util/ReenableStupidWarnings.h
 
 /usr/include/eigen3/Eigen/src/Core/SolverBase.h
 
-/usr/include/eigen3/Eigen/src/Core/SpecialFunctions.h
-
 /usr/include/eigen3/Eigen/src/Core/StableNorm.h
 
 /usr/include/eigen3/Eigen/src/Core/Stride.h
@@ -568,15 +614,29 @@ src/Core/util/ReenableStupidWarnings.h
 
 /usr/include/eigen3/Eigen/src/Core/arch/AVX/TypeCasting.h
 
+/usr/include/eigen3/Eigen/src/Core/arch/AVX512/MathFunctions.h
+
+/usr/include/eigen3/Eigen/src/Core/arch/AVX512/PacketMath.h
+
 /usr/include/eigen3/Eigen/src/Core/arch/AltiVec/Complex.h
 
 /usr/include/eigen3/Eigen/src/Core/arch/AltiVec/MathFunctions.h
 
 /usr/include/eigen3/Eigen/src/Core/arch/AltiVec/PacketMath.h
 
+/usr/include/eigen3/Eigen/src/Core/arch/CUDA/Complex.h
+
+/usr/include/eigen3/Eigen/src/Core/arch/CUDA/Half.h
+
 /usr/include/eigen3/Eigen/src/Core/arch/CUDA/MathFunctions.h
 
 /usr/include/eigen3/Eigen/src/Core/arch/CUDA/PacketMath.h
+
+/usr/include/eigen3/Eigen/src/Core/arch/CUDA/PacketMathHalf.h
+
+/usr/include/eigen3/Eigen/src/Core/arch/CUDA/TypeCasting.h
+
+/usr/include/eigen3/Eigen/src/Core/arch/Default/ConjHelper.h
 
 /usr/include/eigen3/Eigen/src/Core/arch/Default/Settings.h
 
@@ -594,6 +654,14 @@ src/Core/util/ReenableStupidWarnings.h
 
 /usr/include/eigen3/Eigen/src/Core/arch/SSE/TypeCasting.h
 
+/usr/include/eigen3/Eigen/src/Core/arch/ZVector/Complex.h
+
+/usr/include/eigen3/Eigen/src/Core/arch/ZVector/MathFunctions.h
+
+/usr/include/eigen3/Eigen/src/Core/arch/ZVector/PacketMath.h
+stdint.h
+-
+
 /usr/include/eigen3/Eigen/src/Core/functors/AssignmentFunctors.h
 
 /usr/include/eigen3/Eigen/src/Core/functors/BinaryFunctors.h
@@ -601,6 +669,8 @@ src/Core/util/ReenableStupidWarnings.h
 /usr/include/eigen3/Eigen/src/Core/functors/NullaryFunctors.h
 
 /usr/include/eigen3/Eigen/src/Core/functors/StlFunctors.h
+
+/usr/include/eigen3/Eigen/src/Core/functors/TernaryFunctors.h
 
 /usr/include/eigen3/Eigen/src/Core/functors/UnaryFunctors.h
 
@@ -610,23 +680,23 @@ src/Core/util/ReenableStupidWarnings.h
 
 /usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixMatrixTriangular.h
 
-/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixMatrixTriangular_MKL.h
+/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixMatrixTriangular_BLAS.h
 
-/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixMatrix_MKL.h
+/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixMatrix_BLAS.h
 
 /usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixVector.h
 
-/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixVector_MKL.h
+/usr/include/eigen3/Eigen/src/Core/products/GeneralMatrixVector_BLAS.h
 
 /usr/include/eigen3/Eigen/src/Core/products/Parallelizer.h
 
 /usr/include/eigen3/Eigen/src/Core/products/SelfadjointMatrixMatrix.h
 
-/usr/include/eigen3/Eigen/src/Core/products/SelfadjointMatrixMatrix_MKL.h
+/usr/include/eigen3/Eigen/src/Core/products/SelfadjointMatrixMatrix_BLAS.h
 
 /usr/include/eigen3/Eigen/src/Core/products/SelfadjointMatrixVector.h
 
-/usr/include/eigen3/Eigen/src/Core/products/SelfadjointMatrixVector_MKL.h
+/usr/include/eigen3/Eigen/src/Core/products/SelfadjointMatrixVector_BLAS.h
 
 /usr/include/eigen3/Eigen/src/Core/products/SelfadjointProduct.h
 
@@ -634,15 +704,15 @@ src/Core/util/ReenableStupidWarnings.h
 
 /usr/include/eigen3/Eigen/src/Core/products/TriangularMatrixMatrix.h
 
-/usr/include/eigen3/Eigen/src/Core/products/TriangularMatrixMatrix_MKL.h
+/usr/include/eigen3/Eigen/src/Core/products/TriangularMatrixMatrix_BLAS.h
 
 /usr/include/eigen3/Eigen/src/Core/products/TriangularMatrixVector.h
 
-/usr/include/eigen3/Eigen/src/Core/products/TriangularMatrixVector_MKL.h
+/usr/include/eigen3/Eigen/src/Core/products/TriangularMatrixVector_BLAS.h
 
 /usr/include/eigen3/Eigen/src/Core/products/TriangularSolverMatrix.h
 
-/usr/include/eigen3/Eigen/src/Core/products/TriangularSolverMatrix_MKL.h
+/usr/include/eigen3/Eigen/src/Core/products/TriangularSolverMatrix_BLAS.h
 
 /usr/include/eigen3/Eigen/src/Core/products/TriangularSolverVector.h
 
@@ -657,8 +727,8 @@ src/Core/util/ReenableStupidWarnings.h
 /usr/include/eigen3/Eigen/src/Core/util/MKL_support.h
 mkl.h
 -
-mkl_lapacke.h
--
+../../misc/blas.h
+/usr/include/eigen3/Eigen/src/misc/blas.h
 
 /usr/include/eigen3/Eigen/src/Core/util/Macros.h
 cstdlib
@@ -667,13 +737,13 @@ iostream
 -
 
 /usr/include/eigen3/Eigen/src/Core/util/Memory.h
-unistd.h
--
 
 /usr/include/eigen3/Eigen/src/Core/util/Meta.h
 cfloat
 -
 math_constants.h
+-
+cstdint
 -
 
 /usr/include/eigen3/Eigen/src/Core/util/ReenableStupidWarnings.h
@@ -749,6 +819,8 @@ math_constants.h
 /usr/include/eigen3/Eigen/src/SparseCore/SparseView.h
 
 /usr/include/eigen3/Eigen/src/SparseCore/TriangularSolver.h
+
+/usr/include/eigen3/Eigen/src/misc/blas.h
 
 /usr/include/eigen3/Eigen/src/plugins/ArrayCwiseBinaryOps.h
 
